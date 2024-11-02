@@ -19,6 +19,9 @@ const AudioShare = () => {
   const [detectionStatus, setDetectionStatus] = useState<string>("Idle");
   const [binaryBuffer, setBinaryBuffer] = useState<string>("");
 
+  // Additional State for Visualization
+  const [audioLevel, setAudioLevel] = useState<number>(0);
+
   // Helper function to convert text to binary
   const textToBinary = (text: string): string => {
     return text
@@ -28,10 +31,10 @@ const AudioShare = () => {
   };
 
   // Helper function to convert binary to text
-  const binaryToText = (binary: string): string => {
-    const bytes = binary.match(/.{1,8}/g) || [];
-    return bytes.map((byte) => String.fromCharCode(parseInt(byte, 2))).join("");
-  };
+  //   const binaryToText = (binary: string): string => {
+  //     const bytes = binary.match(/.{1,8}/g) || [];
+  //     return bytes.map((byte) => String.fromCharCode(parseInt(byte, 2))).join("");
+  //   };
 
   // Initialize Audio Context for Sending
   const initializeSendAudio = async () => {
@@ -54,19 +57,41 @@ const AudioShare = () => {
       await receiveAudioContext.current.resume();
     }
 
-    const source = receiveAudioContext.current.createMediaStreamSource(stream);
-    analyser.current = receiveAudioContext.current.createAnalyser();
-    analyser.current.fftSize = 2048;
-    analyser.current.minDecibels = -90;
-    analyser.current.maxDecibels = -10;
-    analyser.current.smoothingTimeConstant = 0.85;
+    if (!analyser.current) {
+      analyser.current = receiveAudioContext.current.createAnalyser();
+      analyser.current.fftSize = 2048;
+      const bufferLength = analyser.current.frequencyBinCount;
+      dataArrayRef.current = new Uint8Array(bufferLength);
 
-    source.connect(analyser.current);
+      const source =
+        receiveAudioContext.current.createMediaStreamSource(stream);
+      source.connect(analyser.current);
 
-    dataArrayRef.current = new Uint8Array(analyser.current.frequencyBinCount);
+      // **Visual Audio Level Meter Enhancement**
+      const processor = receiveAudioContext.current.createScriptProcessor(
+        2048,
+        1,
+        1
+      );
+      processor.onaudioprocess = () => {
+        const dataArray = new Uint8Array(analyser.current!.frequencyBinCount);
+        analyser.current!.getByteFrequencyData(dataArray);
+
+        // Calculate average amplitude for visualization
+        let sum = 0;
+        dataArray.forEach((value) => {
+          sum += value;
+        });
+        const avg = sum / dataArray.length;
+        setAudioLevel(avg);
+      };
+
+      analyser.current.connect(processor);
+      processor.connect(receiveAudioContext.current.destination);
+    }
   };
 
-  // Send Message via Audio
+  // Send Message Function
   const sendMessage = async () => {
     if (!message) {
       toast({
@@ -80,38 +105,23 @@ const AudioShare = () => {
     try {
       await initializeSendAudio();
 
-      const durationPerBit = 0.05; // 50ms per bit
-      const freqHigh = 2000;
-      const freqLow = 1000;
-      const startFreq = 2500;
-      const pauseDuration = 0.1; // 100ms pause after message
-
       const binaryData = textToBinary(message);
-      const totalDuration =
-        durationPerBit * binaryData.length + pauseDuration + durationPerBit;
+      const freqLow = 1100; // Frequency for bit '0'
+      const freqHigh = 1700; // Frequency for bit '1'
+      const durationPerBit = 0.2; // Increased duration per bit to 200ms
+      const totalDuration = binaryData.length * durationPerBit;
 
-      // Schedule Start Marker
-      const startMarker = sendAudioContext.current!.createOscillator();
-      const startGain = sendAudioContext.current!.createGain();
-      startGain.gain.value = 0.5;
-      startMarker.connect(startGain);
-      startGain.connect(sendAudioContext.current!.destination);
-      startMarker.frequency.value = startFreq;
-      startMarker.start();
-      startMarker.stop(totalDuration);
-
-      // Schedule Bits
       binaryData.split("").forEach((bit, index) => {
         const oscillator = sendAudioContext.current!.createOscillator();
         const gainNode = sendAudioContext.current!.createGain();
-        gainNode.gain.value = 0.5;
+        gainNode.gain.value = 1.0; // Maximum gain without clipping
 
         oscillator.connect(gainNode);
         gainNode.connect(sendAudioContext.current!.destination);
 
         oscillator.frequency.value = bit === "1" ? freqHigh : freqLow;
-        oscillator.start(index * durationPerBit);
-        oscillator.stop((index + 1) * durationPerBit);
+        oscillator.start(index * durationPerBit + 0.05); // Slight delay
+        oscillator.stop((index + 1) * durationPerBit + 0.05);
       });
 
       toast({
@@ -119,7 +129,7 @@ const AudioShare = () => {
         description: "Your message is being transmitted via audio.",
       });
 
-      // Optional: Stop the audio context after transmission
+      // Stop the audio context after transmission
       setTimeout(() => {
         sendAudioContext.current?.close();
         sendAudioContext.current = null;
@@ -140,7 +150,6 @@ const AudioShare = () => {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       await initializeReceiveAudio(stream);
       setIsListening(true);
-      processAudioData();
       toast({
         title: "Listening",
         description: "Started listening for incoming messages.",
@@ -162,80 +171,110 @@ const AudioShare = () => {
       receiveAudioContext.current = null;
     }
     setIsListening(false);
+    setDetectionStatus("Idle");
+    setAudioLevel(0);
     toast({
       title: "Stopped Listening",
       description: "Stopped listening for incoming messages.",
     });
   };
 
-  // Process Audio Data in Real-Time
+  // Process Audio Data
   const processAudioData = () => {
-    if (!analyser.current || !dataArrayRef.current) return;
+    if (!analyser.current || !receiveAudioContext.current) return;
 
-    analyser.current.getByteFrequencyData(dataArrayRef.current);
+    analyser.current.getByteFrequencyData(dataArrayRef.current!);
 
-    // Find the dominant frequency
-    let maxIndex = 0;
-    let maxValue = 0;
-    dataArrayRef.current.forEach((value, index) => {
-      if (value > maxValue) {
-        maxValue = value;
-        maxIndex = index;
+    // Find the frequency with the highest amplitude
+    let max = -Infinity;
+    let index = -1;
+    dataArrayRef.current!.forEach((value, i) => {
+      if (value > max) {
+        max = value;
+        index = i;
       }
     });
 
-    const sampleRate = receiveAudioContext.current!.sampleRate;
-    const frequency = (maxIndex * sampleRate) / analyser.current!.fftSize;
+    const nyquist = receiveAudioContext.current!.sampleRate / 2;
+    const frequency = (index * nyquist) / analyser.current!.fftSize;
 
     setCurrentFrequency(frequency);
-    setCurrentAmplitude(maxValue);
-    setDetectionStatus(
-      `Frequency Detected: ${frequency} Hz, Amplitude: ${maxValue}`
-    );
+    setCurrentAmplitude(max);
 
-    // Detect Start Marker
-    if (frequency >= 2450 && frequency <= 2550 && maxValue > 150) {
+    // Debugging: Log frequency data
+    console.log("Frequency Data:", Array.from(dataArrayRef.current!));
+
+    // Detect start marker
+    if (frequency >= 2100 && frequency <= 2300 && max > 100) {
       setBinaryBuffer("");
       setReceivedMessage("");
       setDetectionStatus("Start Marker Detected. Receiving message...");
       return;
     }
 
-    // Decode Bits based on Frequency
-    if (frequency >= 1950 && frequency <= 2050) {
+    // Decode bits based on frequency ranges
+    if (frequency >= 1700 && frequency <= 1900) {
       // Bit '1'
       setBinaryBuffer((prev) => prev + "1");
-    } else if (frequency >= 950 && frequency <= 1050) {
+    } else if (frequency >= 1100 && frequency <= 1300) {
       // Bit '0'
       setBinaryBuffer((prev) => prev + "0");
     }
 
-    // Simple Decoding Logic (to be improved based on actual signal)
-    if (binaryBuffer.length >= 8) {
-      const lastEightBits = binaryBuffer.slice(-8);
-      const decodedChar = binaryToText(lastEightBits);
-      if (decodedChar) {
-        setReceivedMessage((prev) => prev + decodedChar);
-        setBinaryBuffer("");
-      }
+    // Update decoding status
+    if (binaryBuffer.length > 0) {
+      setDetectionStatus("Decoding...");
     }
 
-    if (isListening) {
-      requestAnimationFrame(processAudioData);
+    // Attempt to decode when a full byte is received
+    if (binaryBuffer.length >= 8) {
+      const byte = binaryBuffer.slice(0, 8);
+      const remaining = binaryBuffer.slice(8);
+      const char = String.fromCharCode(parseInt(byte, 2));
+      setReceivedMessage((prev) => prev + char);
+      setBinaryBuffer(remaining);
     }
   };
 
-  // Cleanup on Component Unmount
+  // Initial Microphone Access Test
   useEffect(() => {
-    return () => {
-      if (sendAudioContext.current) {
-        sendAudioContext.current.close();
-      }
-      if (receiveAudioContext.current) {
-        receiveAudioContext.current.close();
+    const testMicrophone = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+        toast({
+          title: "Microphone Access",
+          description: "Microphone is accessible.",
+          variant: "default",
+        });
+        // **Handle Stream Properly**: Stop all tracks to release the microphone
+        stream.getTracks().forEach((track) => track.stop());
+      } catch (error) {
+        console.error("Microphone Access Error:", error);
+        toast({
+          title: "Microphone Access Denied",
+          description: "Please allow microphone access.",
+          variant: "destructive",
+        });
       }
     };
-  }, []);
+
+    testMicrophone();
+  }, [toast]); // Added 'toast' to the dependency array
+
+  // Effect to process audio data periodically
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isListening) {
+      interval = setInterval(() => {
+        processAudioData();
+      }, 100); // Process audio every 100ms
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isListening, binaryBuffer]);
 
   return (
     <main className="min-h-screen p-8 max-w-2xl mx-auto">
@@ -278,21 +317,24 @@ const AudioShare = () => {
                   />
                 </div>
               </div>
+              {/* **Visual Audio Level Meter** */}
+              <div className="w-full h-2 bg-green-200 rounded">
+                <div
+                  className="h-full bg-green-500 rounded transition-all duration-100"
+                  style={{ width: `${(audioLevel / 255) * 100}%` }}
+                />
+              </div>
             </div>
           )}
 
           {receivedMessage && (
             <div className="p-4 border rounded-lg space-y-2">
-              <p className="font-mono text-sm text-gray-600">
-                Binary:{" "}
-                {receivedMessage
-                  .split("")
-                  .map((char) =>
-                    char.charCodeAt(0).toString(2).padStart(8, "0")
-                  )
-                  .join(" ")}
-              </p>
-              <p className="font-mono">Decoded: {receivedMessage}</p>
+              <h3 className="text-lg font-medium">Received Message:</h3>
+              <Textarea
+                value={receivedMessage}
+                readOnly
+                className="min-h-[100px] border p-2"
+              />
             </div>
           )}
         </div>
