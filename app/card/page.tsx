@@ -12,6 +12,39 @@ export default function BusinessCard() {
   const [orientation, setOrientation] = useState("portrait");
   const [showQR, setShowQR] = useState(false);
 
+  // Add vCard data generation function
+  const generateVCardData = () => {
+    return `BEGIN:VCARD
+VERSION:4.0
+KIND:individual
+FN:Agustin Fitipaldi
+N:Fitipaldi;Agustin;;;
+GENDER:M
+BDAY:20011129
+PHOTO;MEDIATYPE=image/jpeg:https://agustinfitipaldi.com/public/pfp.jpg
+TITLE:Economics Major & Systems Operations Specialist
+EMAIL:agustin@fitipaldi.com
+URL:https://agustinfitipaldi.com
+ORG:University of California\\, Santa Barbara
+ROLE:Student
+NOTE:Economics Major with Research Interest in Government Systems
+END:VCARD`;
+  };
+
+  // Add download handler
+  const handleDownload = () => {
+    const vCardData = generateVCardData();
+    const blob = new Blob([vCardData], { type: "text/vcard;charset=utf-8" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "agustin-fitipaldi.vcf");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
   // Handle orientation changes
   useEffect(() => {
     const handleOrientationChange = () => {
@@ -42,16 +75,10 @@ export default function BusinessCard() {
             onClick={(e) => e.stopPropagation()}
           >
             <QRCodeSVG
-              value={`BEGIN:VCARD
-VERSION:3.0
-FN:Agustin Fitipaldi
-TITLE:Economics Major & Systems Operations Specialist
-EMAIL:agustin@fitipaldi.com
-URL:https://agustinfitipaldi.com
-END:VCARD`}
+              value={generateVCardData()}
               size={250}
               level="H"
-              includeMargin
+              marginSize={1}
             />
           </div>
         </div>
@@ -130,22 +157,31 @@ END:VCARD`}
             </Button>
           </div>
 
-          {/* Update the QR button to just toggle the overlay */}
-          <Button
-            variant="outline"
-            onClick={() => setShowQR(true)}
-            className="w-full mb-2"
-          >
-            Show QR Code
-          </Button>
+          {/* Update the buttons section */}
+          <div className="flex flex-col gap-2 w-full">
+            <Button
+              variant="outline"
+              onClick={() => setShowQR(true)}
+              className="w-full"
+            >
+              Show QR Code
+            </Button>
 
-          {/* Existing Back to Home button */}
-          <Button variant="secondary" asChild className="w-full">
-            <Link href="/">
-              <Home className="h-4 w-4 mr-2" />
-              View Full Profile
-            </Link>
-          </Button>
+            <Button
+              variant="outline"
+              onClick={handleDownload}
+              className="w-full"
+            >
+              Download Contact Card
+            </Button>
+
+            <Button variant="secondary" asChild className="w-full">
+              <Link href="/">
+                <Home className="h-4 w-4 mr-2" />
+                View Full Profile
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
     </main>
