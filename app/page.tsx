@@ -1,6 +1,6 @@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+// import { Card, CardContent } from "@/components/ui/card";
 import { Github, Linkedin, Mail } from "lucide-react";
 
 export default function Home() {
@@ -74,6 +74,7 @@ export default function Home() {
             href="https://github.com/agustinfitipaldi"
             target="_blank"
             rel="noopener noreferrer"
+            title="GitHub"
           >
             <Github className="h-5 w-5" />
           </a>
@@ -83,12 +84,13 @@ export default function Home() {
             href="https://linkedin.com/in/agustinfitipaldi"
             target="_blank"
             rel="noopener noreferrer"
+            title="LinkedIn"
           >
             <Linkedin className="h-5 w-5" />
           </a>
         </Button>
         <Button variant="ghost" size="icon" asChild>
-          <a href="mailto:agustin@fitipaldi.com">
+          <a href="mailto:agustin@fitipaldi.com" title="Email">
             <Mail className="h-5 w-5" />
           </a>
         </Button>
