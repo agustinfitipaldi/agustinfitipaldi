@@ -7,8 +7,53 @@ import Link from "next/link";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ModeToggle } from "@/components/mode-toggle";
 
+// Add these type definitions
+interface NDEFRecord {
+  recordType: string;
+  data: string | ArrayBuffer | DataView;
+}
+
+interface NDEFMessage {
+  records: NDEFRecord[];
+}
+
+declare global {
+  interface Window {
+    NDEFReader: {
+      new (): {
+        write: (message: NDEFMessage) => Promise<void>;
+      };
+    };
+  }
+}
+
 export default function BusinessCard() {
   const [orientation, setOrientation] = useState("portrait");
+  const [nfcSupported, setNfcSupported] = useState(false);
+
+  useEffect(() => {
+    // Check if Web NFC is supported
+    if ("NDEFReader" in window) {
+      setNfcSupported(true);
+    }
+  }, []);
+
+  const shareViaNFC = async () => {
+    try {
+      const ndef = new window.NDEFReader();
+      await ndef.write({
+        records: [
+          {
+            recordType: "url",
+            data: window.location.href,
+          },
+        ],
+      });
+      console.log("Ready to share via NFC!");
+    } catch (error) {
+      console.error("NFC sharing failed:", error);
+    }
+  };
 
   // Handle orientation changes
   useEffect(() => {
@@ -102,7 +147,19 @@ export default function BusinessCard() {
             </Button>
           </div>
 
-          {/* Back to Home */}
+          {/* Add this before the "Back to Home" button */}
+          {nfcSupported && (
+            <Button
+              variant="outline"
+              onClick={shareViaNFC}
+              className="w-full mb-2"
+            >
+              <span className="mr-2">📱</span>
+              Share via NFC
+            </Button>
+          )}
+
+          {/* Existing Back to Home button */}
           <Button variant="secondary" asChild className="w-full">
             <Link href="/">
               <Home className="h-4 w-4 mr-2" />
