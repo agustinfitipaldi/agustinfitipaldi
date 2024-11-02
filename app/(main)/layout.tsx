@@ -60,12 +60,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div>
-            <div className="flex justify-center py-2">
+          <div className="flex flex-col min-h-screen">
+            <header className="flex justify-center py-2">
               <ModeToggle />
-            </div>
+            </header>
+            <main className="flex-1">{children}</main>
           </div>
-          {children}
         </ThemeProvider>
       </body>
     </html>

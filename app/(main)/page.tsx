@@ -1,11 +1,11 @@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Github, Linkedin, Mail, CreditCard, Radio } from "lucide-react";
+import { Github, Linkedin, Mail, CreditCard } from "lucide-react";
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
+// import { Card, CardContent } from "@/components/ui/card";
 export default function Home() {
   return (
-    <main className="min-h-screen p-8 max-w-2xl mx-auto">
+    <div className="p-8 max-w-2xl mx-auto">
       {/* Header Section */}
       <div className="flex items-start justify-between mb-12">
         <div>
@@ -44,11 +44,11 @@ export default function Home() {
                 <CreditCard className="h-5 w-5" />
               </Link>
             </Button>
-            <Button variant="ghost" size="icon" asChild>
+            {/* <Button variant="ghost" size="icon" asChild>
               <Link href="/audio-share" title="Audio Share Experiment">
                 <Radio className="h-5 w-5" />
               </Link>
-            </Button>
+            </Button> */}
           </div>
         </div>
         <Avatar className="h-32 w-32">
@@ -83,7 +83,7 @@ export default function Home() {
       </section>
 
       {/* Projects/Work Section */}
-      <section className="mb-12">
+      {/* <section className="mb-12">
         <h2 className="text-2xl font-semibold mb-4">Experiments</h2>
         <div className="grid gap-4">
           <Card>
@@ -105,7 +105,7 @@ export default function Home() {
             </CardContent>
           </Card>
         </div>
-      </section>
-    </main>
+      </section> */}
+    </div>
   );
 }
