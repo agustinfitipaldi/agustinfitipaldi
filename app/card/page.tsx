@@ -30,6 +30,9 @@ declare global {
 export default function BusinessCard() {
   const [orientation, setOrientation] = useState("portrait");
   const [nfcSupported, setNfcSupported] = useState(false);
+  const [nfcStatus, setNfcStatus] = useState<
+    "idle" | "loading" | "ready" | "error"
+  >("idle");
 
   useEffect(() => {
     // Check if Web NFC is supported
@@ -40,18 +43,44 @@ export default function BusinessCard() {
 
   const shareViaNFC = async () => {
     try {
+      setNfcStatus("loading");
       const ndef = new window.NDEFReader();
+
+      // Create vCard data
+      const vCardData = [
+        "BEGIN:VCARD",
+        "VERSION:3.0",
+        "FN:Agustin Fitipaldi",
+        "TITLE:Economics Major & Systems Operations Specialist",
+        "EMAIL:agustin@fitipaldi.com",
+        "URL:" + window.location.href,
+        "URL;type=GITHUB:https://github.com/agustinfitipaldi",
+        "URL;type=LINKEDIN:https://linkedin.com/in/agustinfitipaldi",
+        "NOTE:UCSB Economics | Research Interest in Government Systems",
+        "END:VCARD",
+      ].join("\n");
+
       await ndef.write({
         records: [
           {
             recordType: "url",
             data: window.location.href,
           },
+          {
+            recordType: "text",
+            data: vCardData,
+          },
         ],
       });
-      console.log("Ready to share via NFC!");
+
+      setNfcStatus("ready");
+      // Reset status after 3 seconds
+      setTimeout(() => setNfcStatus("idle"), 3000);
     } catch (error) {
       console.error("NFC sharing failed:", error);
+      setNfcStatus("error");
+      // Reset status after 3 seconds
+      setTimeout(() => setNfcStatus("idle"), 3000);
     }
   };
 
@@ -152,10 +181,22 @@ export default function BusinessCard() {
             <Button
               variant="outline"
               onClick={shareViaNFC}
-              className="w-full mb-2"
+              className="w-full mb-2 relative"
+              disabled={nfcStatus === "loading" || nfcStatus === "ready"}
             >
-              <span className="mr-2">📱</span>
-              Share via NFC
+              {nfcStatus === "loading" && (
+                <span className="mr-2 animate-spin">⭕</span>
+              )}
+              {nfcStatus === "ready" && <span className="mr-2">✅</span>}
+              {nfcStatus === "error" && <span className="mr-2">❌</span>}
+              {nfcStatus === "idle" && <span className="mr-2">📱</span>}
+              {nfcStatus === "loading"
+                ? "Preparing NFC..."
+                : nfcStatus === "ready"
+                ? "Ready! Tap device"
+                : nfcStatus === "error"
+                ? "Error - Try again"
+                : "Share via NFC"}
             </Button>
           )}
 
