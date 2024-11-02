@@ -32,47 +32,47 @@ END:VCARD`;
   };
 
   // Add download handler with improved mobile compatibility
-  const handleDownload = () => {
-    const vCardData = generateVCardData();
-    // Ensure proper line endings for all platforms
-    const formattedData = vCardData.replace(/\n/g, "\r\n");
+  //   const handleDownload = () => {
+  //     const vCardData = generateVCardData();
+  //     // Ensure proper line endings for all platforms
+  //     const formattedData = vCardData.replace(/\n/g, "\r\n");
 
-    // Create blob with proper MIME type
-    const blob = new Blob([formattedData], {
-      type: "text/vcard",
-    });
+  //     // Create blob with proper MIME type
+  //     const blob = new Blob([formattedData], {
+  //       type: "text/vcard",
+  //     });
 
-    // For iOS Safari and some mobile browsers
-    if (navigator.userAgent.match(/iphone|ipad|ipod|android/i)) {
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "agustin-fitipaldi.vcf";
+  //     // For iOS Safari and some mobile browsers
+  //     if (navigator.userAgent.match(/iphone|ipad|ipod|android/i)) {
+  //       const url = window.URL.createObjectURL(blob);
+  //       const link = document.createElement("a");
+  //       link.href = url;
+  //       link.download = "agustin-fitipaldi.vcf";
 
-      // Trigger click immediately
-      const clickEvent = new MouseEvent("click", {
-        view: window,
-        bubbles: true,
-        cancelable: false,
-      });
-      link.dispatchEvent(clickEvent);
+  //       // Trigger click immediately
+  //       const clickEvent = new MouseEvent("click", {
+  //         view: window,
+  //         bubbles: true,
+  //         cancelable: false,
+  //       });
+  //       link.dispatchEvent(clickEvent);
 
-      // Clean up
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url);
-      }, 100);
-    } else {
-      // For desktop browsers
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "agustin-fitipaldi.vcf");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    }
-  };
+  //       // Clean up
+  //       setTimeout(() => {
+  //         window.URL.revokeObjectURL(url);
+  //       }, 100);
+  //     } else {
+  //       // For desktop browsers
+  //       const url = window.URL.createObjectURL(blob);
+  //       const link = document.createElement("a");
+  //       link.href = url;
+  //       link.setAttribute("download", "agustin-fitipaldi.vcf");
+  //       document.body.appendChild(link);
+  //       link.click();
+  //       document.body.removeChild(link);
+  //       window.URL.revokeObjectURL(url);
+  //     }
+  //   };
 
   // Handle orientation changes
   useEffect(() => {
@@ -195,23 +195,23 @@ END:VCARD`;
             </Button>
           </div>
 
+          <Button
+            variant="outline"
+            onClick={() => setShowQR(true)}
+            className="w-3/4 mt-2"
+          >
+            QR Code
+          </Button>
+
           {/* Update the buttons section */}
           <div className="flex gap-2 w-full">
-            <Button
-              variant="outline"
-              onClick={() => setShowQR(true)}
-              className="w-1/2"
-            >
-              Show QR Code
-            </Button>
-
-            <Button
+            {/* <Button
               variant="outline"
               onClick={handleDownload}
               className="w-1/2"
             >
               Download Contact
-            </Button>
+            </Button> */}
           </div>
         </div>
       </div>
