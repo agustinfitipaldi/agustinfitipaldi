@@ -12,6 +12,8 @@ import { useToast } from "@/hooks/use-toast";
 interface NDEFRecord {
   recordType: string;
   data: string | ArrayBuffer | DataView;
+  encoding?: string;
+  lang?: string;
 }
 
 interface NDEFMessage {
@@ -35,6 +37,7 @@ declare global {
     NDEFReader: {
       new (): {
         write: (message: NDEFMessage) => Promise<void>;
+        scan: () => Promise<void>;
       };
     };
   }
@@ -60,31 +63,42 @@ export default function BusinessCard() {
     try {
       setNfcStatus("loading");
       setErrorMessage("");
-      console.log("Starting NFC write...");
 
-      const ndef = new window.NDEFReader();
-      console.log("NDEFReader created");
-
-      try {
-        const permissionStatus = await navigator.permissions.query({
-          name: "nfc" as PermissionName,
-        });
-        console.log("NFC Permission status:", permissionStatus.state);
-      } catch (permError) {
-        console.log("Permission check error:", permError);
+      // First request NFC permissions
+      const permission = await (navigator.permissions as Permissions).query({
+        name: "nfc",
+      });
+      if (permission.state === "denied") {
+        throw new Error("NFC permission denied");
       }
 
+      const ndef = new window.NDEFReader();
+
+      // Start scanning before writing
+      await ndef.scan();
+
+      toast({
+        title: "Ready to share",
+        description: "Hold your phone close to the NFC target device",
+      });
+
+      // Try writing with a more basic NDEF record format
       await ndef.write({
         records: [
           {
-            recordType: "url",
-            data: new TextEncoder().encode(window.location.href),
+            recordType: "text",
+            data: window.location.href,
+            encoding: "utf-8",
+            lang: "en",
           },
         ],
       });
-      console.log("Write successful");
 
       setNfcStatus("ready");
+      toast({
+        title: "Success!",
+        description: "URL shared successfully via NFC",
+      });
       setTimeout(() => setNfcStatus("idle"), 3000);
     } catch (error) {
       console.log("NFC Error:", error);
