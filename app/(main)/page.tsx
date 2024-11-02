@@ -1,8 +1,8 @@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Github, Linkedin, Mail, CreditCard } from "lucide-react";
+import { Github, Linkedin, Mail, CreditCard, Radio } from "lucide-react";
 import Link from "next/link";
-
+import { Card, CardContent } from "@/components/ui/card";
 export default function Home() {
   return (
     <main className="min-h-screen p-8 max-w-2xl mx-auto">
@@ -44,6 +44,11 @@ export default function Home() {
                 <CreditCard className="h-5 w-5" />
               </Link>
             </Button>
+            <Button variant="ghost" size="icon" asChild>
+              <Link href="/audio-share" title="Audio Share Experiment">
+                <Radio className="h-5 w-5" />
+              </Link>
+            </Button>
           </div>
         </div>
         <Avatar className="h-32 w-32">
@@ -78,26 +83,29 @@ export default function Home() {
       </section>
 
       {/* Projects/Work Section */}
-      {/* <section className="mb-12">
-        <h2 className="text-2xl font-semibold mb-4">Featured Work</h2>
+      <section className="mb-12">
+        <h2 className="text-2xl font-semibold mb-4">Experiments</h2>
         <div className="grid gap-4">
           <Card>
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-semibold">Project Name</h3>
+                  <h3 className="font-semibold">Audio Data Transfer</h3>
                   <p className="text-muted-foreground">
-                    Brief description of the project
+                    Experimental feature for transferring text data via audio
+                    signals between devices
                   </p>
                 </div>
-                <Button variant="ghost" size="icon">
-                  <ExternalLink className="h-4 w-4" />
+                <Button variant="ghost" size="icon" asChild>
+                  <Link href="/audio-share">
+                    <Radio className="h-4 w-4" />
+                  </Link>
                 </Button>
               </div>
             </CardContent>
           </Card>
         </div>
-      </section> */}
+      </section>
     </main>
   );
 }
