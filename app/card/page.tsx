@@ -6,113 +6,11 @@ import { Github, Linkedin, Mail, Home } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ModeToggle } from "@/components/mode-toggle";
-import { useToast } from "@/hooks/use-toast";
-
-// Add these type definitions
-interface NDEFRecord {
-  recordType: string;
-  data: string | ArrayBuffer | DataView;
-  encoding?: string;
-  lang?: string;
-}
-
-interface NDEFMessage {
-  records: NDEFRecord[];
-}
-
-// Add to your existing type definitions
-interface PermissionDescriptor {
-  name: "nfc";
-}
-
-interface PermissionStatus {
-  state: "granted" | "denied" | "prompt";
-}
-
-declare global {
-  interface Permissions {
-    query(descriptor: PermissionDescriptor): Promise<PermissionStatus>;
-  }
-  interface Window {
-    NDEFReader: {
-      new (): {
-        write: (message: NDEFMessage) => Promise<void>;
-        scan: () => Promise<void>;
-      };
-    };
-  }
-}
+import { QRCodeSVG } from "qrcode.react";
 
 export default function BusinessCard() {
   const [orientation, setOrientation] = useState("portrait");
-  const [nfcSupported, setNfcSupported] = useState(false);
-  const [nfcStatus, setNfcStatus] = useState<
-    "idle" | "loading" | "ready" | "error"
-  >("idle");
-  const [errorMessage, setErrorMessage] = useState<string>("");
-  const { toast } = useToast();
-
-  useEffect(() => {
-    // Check if Web NFC is supported
-    if ("NDEFReader" in window) {
-      setNfcSupported(true);
-    }
-  }, []);
-
-  const shareViaNFC = async () => {
-    try {
-      setNfcStatus("loading");
-      setErrorMessage("");
-
-      // Check NFC permission
-      const permission = await (navigator.permissions as Permissions).query({
-        name: "nfc",
-      });
-      if (permission.state === "denied") {
-        throw new Error("NFC permission denied");
-      }
-
-      const ndef = new window.NDEFReader();
-
-      // Optional: You can skip scan if writing to a tag
-      // await ndef.scan();
-
-      // Prepare the contact information as a URL or vCard
-      const contactURL = `${window.location.origin}/contact.vcf`;
-
-      await ndef.write({
-        records: [
-          {
-            recordType: "url",
-            data: contactURL, // Link to a vCard file or contact page
-          },
-        ],
-      });
-
-      setNfcStatus("ready");
-      toast({
-        title: "Success!",
-        description: "Contact information written to NFC tag successfully",
-      });
-      setTimeout(() => setNfcStatus("idle"), 3000);
-    } catch (error) {
-      console.error("NFC Error:", error);
-      const errorMsg = error instanceof Error ? error.message : "Unknown error";
-      setErrorMessage(errorMsg);
-      setNfcStatus("error");
-
-      toast({
-        variant: "destructive",
-        title: "NFC Error",
-        description: errorMsg,
-      });
-
-      setTimeout(() => {
-        setNfcStatus("idle");
-        setErrorMessage("");
-      }, 5000);
-    }
-  };
+  const [showQR, setShowQR] = useState(false);
 
   // Handle orientation changes
   useEffect(() => {
@@ -126,13 +24,39 @@ export default function BusinessCard() {
       );
     };
 
-    handleOrientationChange(); // Initial check
+    handleOrientationChange();
     window.addEventListener("resize", handleOrientationChange);
     return () => window.removeEventListener("resize", handleOrientationChange);
   }, []);
 
   return (
     <main className="h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background to-muted">
+      {/* Add overlay QR code */}
+      {showQR && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center cursor-pointer"
+          onClick={() => setShowQR(false)}
+        >
+          <div
+            className="p-4 bg-white rounded-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <QRCodeSVG
+              value={`BEGIN:VCARD
+VERSION:3.0
+FN:Agustin Fitipaldi
+TITLE:Economics Major & Systems Operations Specialist
+EMAIL:agustin@fitipaldi.com
+URL:https://agustinfitipaldi.com
+END:VCARD`}
+              size={250}
+              level="H"
+              includeMargin
+            />
+          </div>
+        </div>
+      )}
+
       <div
         className={`bg-card text-card-foreground shadow-lg rounded-xl relative ${
           orientation === "landscape"
@@ -206,34 +130,14 @@ export default function BusinessCard() {
             </Button>
           </div>
 
-          {/* Add this before the "Back to Home" button */}
-          {nfcSupported && (
-            <>
-              <Button
-                variant="outline"
-                onClick={shareViaNFC}
-                className="w-full mb-2 relative"
-                disabled={nfcStatus === "loading" || nfcStatus === "ready"}
-              >
-                {nfcStatus === "loading" && (
-                  <span className="mr-2 animate-spin">⭕</span>
-                )}
-                {nfcStatus === "ready" && <span className="mr-2">✅</span>}
-                {nfcStatus === "error" && <span className="mr-2">❌</span>}
-                {nfcStatus === "idle" && <span className="mr-2">📱</span>}
-                {nfcStatus === "loading"
-                  ? "Preparing NFC..."
-                  : nfcStatus === "ready"
-                  ? "Ready! Tap device"
-                  : nfcStatus === "error"
-                  ? "Error - Try again"
-                  : "Share via NFC"}
-              </Button>
-              {errorMessage && (
-                <p className="text-sm text-destructive mb-2">{errorMessage}</p>
-              )}
-            </>
-          )}
+          {/* Update the QR button to just toggle the overlay */}
+          <Button
+            variant="outline"
+            onClick={() => setShowQR(true)}
+            className="w-full mb-2"
+          >
+            Show QR Code
+          </Button>
 
           {/* Existing Back to Home button */}
           <Button variant="secondary" asChild className="w-full">
