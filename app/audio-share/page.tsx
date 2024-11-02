@@ -9,9 +9,13 @@ function AudioShare() {
   const [message, setMessage] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [receivedMessage, setReceivedMessage] = useState("");
-  const audioContext = useRef<AudioContext | null>(null);
+  const sendAudioContext = useRef<AudioContext | null>(null);
+  const receiveAudioContext = useRef<AudioContext | null>(null);
   const analyser = useRef<AnalyserNode | null>(null);
   const { toast } = useToast();
+  const [currentFrequency, setCurrentFrequency] = useState<number>(0);
+  const [currentAmplitude, setCurrentAmplitude] = useState<number>(0);
+  const [detectionStatus, setDetectionStatus] = useState<string>("Idle");
 
   // Convert text to binary
   const textToBinary = (text: string) => {
@@ -23,8 +27,12 @@ function AudioShare() {
 
   const sendMessage = async () => {
     try {
-      if (!audioContext.current) {
-        audioContext.current = new AudioContext();
+      if (!sendAudioContext.current) {
+        sendAudioContext.current = new AudioContext();
+      }
+
+      if (sendAudioContext.current.state === "suspended") {
+        await sendAudioContext.current.resume();
       }
 
       const duration = 0.02; // Reduced from 0.1 to 0.02 seconds per bit
@@ -34,26 +42,30 @@ function AudioShare() {
       const binaryData = textToBinary(message);
 
       // Add start marker frequency
-      const startMarker = audioContext.current.createOscillator();
-      const startGain = audioContext.current.createGain();
+      const startMarker = sendAudioContext.current.createOscillator();
+      const startGain = sendAudioContext.current.createGain();
+      startGain.gain.value = 0.5;
       startMarker.connect(startGain);
-      startGain.connect(audioContext.current.destination);
+      startGain.connect(sendAudioContext.current.destination);
       startMarker.frequency.value = 2500; // Start marker frequency
-      startMarker.start(audioContext.current.currentTime);
-      startMarker.stop(audioContext.current.currentTime + duration);
+      startMarker.start(sendAudioContext.current.currentTime);
+      startMarker.stop(sendAudioContext.current.currentTime + duration);
 
       // Create oscillator for each bit
       for (let i = 0; i < binaryData.length; i++) {
-        const oscillator = audioContext.current.createOscillator();
-        const gainNode = audioContext.current.createGain();
+        const oscillator = sendAudioContext.current.createOscillator();
+        const gainNode = sendAudioContext.current.createGain();
+        gainNode.gain.value = 0.5;
 
         oscillator.connect(gainNode);
-        gainNode.connect(audioContext.current.destination);
+        gainNode.connect(sendAudioContext.current.destination);
 
         oscillator.frequency.value = binaryData[i] === "1" ? freqHigh : freqLow;
 
-        oscillator.start(audioContext.current.currentTime + i * duration);
-        oscillator.stop(audioContext.current.currentTime + (i + 1) * duration);
+        oscillator.start(sendAudioContext.current.currentTime + i * duration);
+        oscillator.stop(
+          sendAudioContext.current.currentTime + (i + 1) * duration
+        );
       }
 
       toast({
@@ -73,19 +85,37 @@ function AudioShare() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-      if (!audioContext.current) {
-        audioContext.current = new AudioContext();
+      if (!receiveAudioContext.current) {
+        receiveAudioContext.current = new AudioContext();
       }
 
-      const source = audioContext.current.createMediaStreamSource(stream);
-      analyser.current = audioContext.current.createAnalyser();
+      if (receiveAudioContext.current.state === "suspended") {
+        await receiveAudioContext.current.resume();
+      }
+
+      const source =
+        receiveAudioContext.current.createMediaStreamSource(stream);
+      analyser.current = receiveAudioContext.current.createAnalyser();
       analyser.current.fftSize = 2048;
+      analyser.current.minDecibels = -90;
+      analyser.current.maxDecibels = -10;
+      analyser.current.smoothingTimeConstant = 0.85;
 
       source.connect(analyser.current);
+      // Add this line to connect to destination (might help with debugging)
+      // analyser.current.connect(receiveAudioContext.current.destination);
+
+      console.log("Audio input setup complete", {
+        sampleRate: receiveAudioContext.current.sampleRate,
+        fftSize: analyser.current.fftSize,
+        minDecibels: analyser.current.minDecibels,
+        maxDecibels: analyser.current.maxDecibels,
+      });
 
       setIsListening(true);
       processAudioData();
-    } catch {
+    } catch (error) {
+      console.error("Microphone access error:", error);
       toast({
         title: "Error",
         description: "Failed to access microphone",
@@ -99,7 +129,20 @@ function AudioShare() {
 
     const bufferLength = analyser.current.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
+    const timeData = new Uint8Array(bufferLength);
+
+    analyser.current.getByteTimeDomainData(timeData);
     analyser.current.getByteFrequencyData(dataArray);
+
+    // Debug raw data
+    const sum = dataArray.reduce((a, b) => a + b, 0);
+    const average = sum / bufferLength;
+
+    console.log("Raw Audio Data:", {
+      averageAmplitude: average,
+      someTimeData: Array.from(timeData.slice(0, 5)),
+      someFreqData: Array.from(dataArray.slice(0, 5)),
+    });
 
     // Find the dominant frequency
     let maxIndex = 0;
@@ -112,22 +155,18 @@ function AudioShare() {
     }
 
     // Convert index to frequency
-    const sampleRate = audioContext.current!.sampleRate;
+    const sampleRate = receiveAudioContext.current!.sampleRate;
     const frequency = (maxIndex * sampleRate) / analyser.current.fftSize;
 
-    // Decode frequencies
-    if (maxValue > 128) {
-      // Threshold for detection
-      if (Math.abs(frequency - 2500) < 100) {
-        // Start marker detected
-        setReceivedMessage("Starting to receive message...");
-      } else if (Math.abs(frequency - 2000) < 100) {
-        // High frequency detected (1)
-        setReceivedMessage((prev) => prev + "1");
-      } else if (Math.abs(frequency - 1000) < 100) {
-        // Low frequency detected (0)
-        setReceivedMessage((prev) => prev + "0");
-      }
+    // Update state less frequently to reduce UI updates
+    setCurrentFrequency(Math.round(frequency));
+    setCurrentAmplitude(maxValue);
+    setDetectionStatus(`Raw Data: Avg=${average.toFixed(2)}, Max=${maxValue}`);
+
+    // Example: Update receivedMessage when a specific frequency is detected
+    if (frequency === 2500) {
+      // Replace with your start marker frequency or condition
+      setReceivedMessage("Starting to receive message...");
     }
 
     requestAnimationFrame(processAudioData);
@@ -137,6 +176,25 @@ function AudioShare() {
   const binaryToText = (binary: string) => {
     const bytes = binary.match(/.{1,8}/g) || [];
     return bytes.map((byte) => String.fromCharCode(parseInt(byte, 2))).join("");
+  };
+
+  // Add this function near your other functions
+  const playTestTone = () => {
+    if (!sendAudioContext.current) {
+      sendAudioContext.current = new AudioContext();
+    }
+
+    const oscillator = sendAudioContext.current.createOscillator();
+    const gainNode = sendAudioContext.current.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(sendAudioContext.current.destination);
+
+    oscillator.frequency.value = 2000; // Test frequency
+    gainNode.gain.value = 0.2; // Increased gain for testing
+
+    oscillator.start();
+    setTimeout(() => oscillator.stop(), 1000); // Stop after 1 second
   };
 
   return (
@@ -153,6 +211,10 @@ function AudioShare() {
             className="min-h-[100px]"
           />
           <Button onClick={sendMessage}>Send via Audio</Button>
+
+          <Button onClick={playTestTone} variant="secondary">
+            Play Test Tone
+          </Button>
         </div>
 
         <div className="space-y-4">
@@ -165,6 +227,23 @@ function AudioShare() {
           >
             {isListening ? "Stop Listening" : "Start Listening"}
           </Button>
+
+          {isListening && (
+            <div className="p-4 border rounded-lg space-y-2 bg-gray-50">
+              <h3 className="font-semibold">Live Detection Stats:</h3>
+              <div className="space-y-1 font-mono text-sm">
+                <p>Frequency: {currentFrequency} Hz</p>
+                <p>Amplitude: {currentAmplitude}</p>
+                <p>Status: {detectionStatus}</p>
+                <div className="w-full h-2 bg-gray-200 rounded">
+                  <div
+                    className="h-full bg-blue-500 rounded transition-all duration-100"
+                    style={{ width: `${(currentAmplitude / 255) * 100}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {receivedMessage && (
             <div className="p-4 border rounded-lg space-y-2">
