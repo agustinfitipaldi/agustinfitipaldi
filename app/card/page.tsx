@@ -64,7 +64,7 @@ export default function BusinessCard() {
       setNfcStatus("loading");
       setErrorMessage("");
 
-      // First request NFC permissions
+      // Check NFC permission
       const permission = await (navigator.permissions as Permissions).query({
         name: "nfc",
       });
@@ -74,22 +74,17 @@ export default function BusinessCard() {
 
       const ndef = new window.NDEFReader();
 
-      // Start scanning before writing
-      await ndef.scan();
+      // Optional: You can skip scan if writing to a tag
+      // await ndef.scan();
 
-      toast({
-        title: "Ready to share",
-        description: "Hold your phone close to the NFC target device",
-      });
+      // Prepare the contact information as a URL or vCard
+      const contactURL = `${window.location.origin}/contact.vcf`;
 
-      // Try writing with a more basic NDEF record format
       await ndef.write({
         records: [
           {
-            recordType: "text",
-            data: window.location.href,
-            encoding: "utf-8",
-            lang: "en",
+            recordType: "url",
+            data: contactURL, // Link to a vCard file or contact page
           },
         ],
       });
@@ -97,11 +92,11 @@ export default function BusinessCard() {
       setNfcStatus("ready");
       toast({
         title: "Success!",
-        description: "URL shared successfully via NFC",
+        description: "Contact information written to NFC tag successfully",
       });
       setTimeout(() => setNfcStatus("idle"), 3000);
     } catch (error) {
-      console.log("NFC Error:", error);
+      console.error("NFC Error:", error);
       const errorMsg = error instanceof Error ? error.message : "Unknown error";
       setErrorMessage(errorMsg);
       setNfcStatus("error");
