@@ -46,40 +46,20 @@ export default function BusinessCard() {
       setNfcStatus("loading");
       const ndef = new window.NDEFReader();
 
-      // Create vCard data
-      const vCardData = [
-        "BEGIN:VCARD",
-        "VERSION:3.0",
-        "FN:Agustin Fitipaldi",
-        "TITLE:Economics Major & Systems Operations Specialist",
-        "EMAIL:agustin@fitipaldi.com",
-        "URL:" + window.location.href,
-        "URL;type=GITHUB:https://github.com/agustinfitipaldi",
-        "URL;type=LINKEDIN:https://linkedin.com/in/agustinfitipaldi",
-        "NOTE:UCSB Economics | Research Interest in Government Systems",
-        "END:VCARD",
-      ].join("\n");
-
       await ndef.write({
         records: [
           {
             recordType: "url",
-            data: window.location.href,
-          },
-          {
-            recordType: "text",
-            data: vCardData,
+            data: new TextEncoder().encode(window.location.href),
           },
         ],
       });
 
       setNfcStatus("ready");
-      // Reset status after 3 seconds
       setTimeout(() => setNfcStatus("idle"), 3000);
     } catch (error) {
       console.error("NFC sharing failed:", error);
       setNfcStatus("error");
-      // Reset status after 3 seconds
       setTimeout(() => setNfcStatus("idle"), 3000);
     }
   };
