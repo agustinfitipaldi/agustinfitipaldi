@@ -1,7 +1,7 @@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-// import { Card, CardContent } from "@/components/ui/card";
-import { Github, Linkedin, Mail } from "lucide-react";
+import { Github, Linkedin, Mail, CreditCard } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -11,7 +11,7 @@ export default function Home() {
         <div>
           <h1 className="text-4xl font-bold mb-2">Agustin Fitipaldi</h1>
           <p className="text-muted-foreground text-lg mb-4">
-            Economics Major and Systems Operations Specialist
+            Economics Major & Systems Operations Specialist
           </p>
           <div className="flex gap-4">
             <Button variant="ghost" size="icon" asChild>
@@ -38,6 +38,11 @@ export default function Home() {
               <a href="mailto:agustin@fitipaldi.com" title="Email">
                 <Mail className="h-5 w-5" />
               </a>
+            </Button>
+            <Button variant="ghost" size="icon" asChild>
+              <Link href="/card" title="Digital Business Card">
+                <CreditCard className="h-5 w-5" />
+              </Link>
             </Button>
           </div>
         </div>
