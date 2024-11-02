@@ -7,13 +7,21 @@ export default function Home() {
   return (
     <div className="p-8 max-w-2xl mx-auto">
       {/* Header Section */}
-      <div className="flex items-start justify-between mb-12">
+      <div className="relative mb-8">
+        <Avatar className="sm:float-right sm:ml-6 mb-4 sm:h-32 sm:w-32 h-32 w-32 mx-auto block">
+          <AvatarImage
+            src="/pfp.jpg"
+            alt="Agustin Fitipaldi"
+            className="object-cover"
+          />
+          <AvatarFallback>AF</AvatarFallback>
+        </Avatar>
         <div>
           <h1 className="text-4xl font-bold mb-2">Agustin Fitipaldi</h1>
           <p className="text-muted-foreground text-lg mb-4">
             Economics Major & Systems Operations Specialist
           </p>
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center">
             <Button variant="ghost" size="icon" asChild>
               <a
                 href="https://github.com/agustinfitipaldi"
@@ -39,26 +47,15 @@ export default function Home() {
                 <Mail className="h-5 w-5" />
               </a>
             </Button>
-            <Button variant="ghost" size="icon" asChild>
+            <div className="h-6 w-px bg-border" />
+            <Button variant="ghost" className="flex gap-2" asChild>
               <Link href="/card" title="Digital Business Card">
                 <CreditCard className="h-5 w-5" />
+                <span>Card</span>
               </Link>
             </Button>
-            {/* <Button variant="ghost" size="icon" asChild>
-              <Link href="/audio-share" title="Audio Share Experiment">
-                <Radio className="h-5 w-5" />
-              </Link>
-            </Button> */}
           </div>
         </div>
-        <Avatar className="h-32 w-32">
-          <AvatarImage
-            src="/pfp.jpg"
-            alt="Agustin Fitipaldi"
-            className="object-cover"
-          />
-          <AvatarFallback>AF</AvatarFallback>
-        </Avatar>
       </div>
 
       {/* About Section */}

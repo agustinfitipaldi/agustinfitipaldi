@@ -31,18 +31,47 @@ NOTE:Economics Major with Research Interest in Government Systems
 END:VCARD`;
   };
 
-  // Add download handler
+  // Add download handler with improved mobile compatibility
   const handleDownload = () => {
     const vCardData = generateVCardData();
-    const blob = new Blob([vCardData], { type: "text/vcard;charset=utf-8" });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", "agustin-fitipaldi.vcf");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    // Ensure proper line endings for all platforms
+    const formattedData = vCardData.replace(/\n/g, "\r\n");
+
+    // Create blob with proper MIME type
+    const blob = new Blob([formattedData], {
+      type: "text/vcard",
+    });
+
+    // For iOS Safari and some mobile browsers
+    if (navigator.userAgent.match(/iphone|ipad|ipod|android/i)) {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "agustin-fitipaldi.vcf";
+
+      // Trigger click immediately
+      const clickEvent = new MouseEvent("click", {
+        view: window,
+        bubbles: true,
+        cancelable: false,
+      });
+      link.dispatchEvent(clickEvent);
+
+      // Clean up
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 100);
+    } else {
+      // For desktop browsers
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "agustin-fitipaldi.vcf");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    }
   };
 
   // Handle orientation changes
@@ -91,7 +120,16 @@ END:VCARD`;
             : "min-h-fit p-6 flex flex-col items-center"
         }`}
       >
-        {/* Theme Toggle - Positioned absolutely in the corner */}
+        {/* Back Button - Positioned absolutely in the top left corner */}
+        <div className="absolute top-4 left-4">
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/">
+              <Home className="h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+
+        {/* Theme Toggle - Positioned absolutely in the top right corner */}
         <div className="absolute top-4 right-4">
           <ModeToggle />
         </div>
@@ -104,8 +142,8 @@ END:VCARD`;
         >
           <Avatar
             className={`${
-              orientation === "landscape" ? "h-28 w-28" : "h-24 w-24"
-            } mb-4`}
+              orientation === "landscape" ? "h-44 w-44" : "h-32 w-32"
+            } mb-4 ml-8`}
           >
             <AvatarImage
               src="/pfp.jpg"
@@ -158,11 +196,11 @@ END:VCARD`;
           </div>
 
           {/* Update the buttons section */}
-          <div className="flex flex-col gap-2 w-full">
+          <div className="flex gap-2 w-full">
             <Button
               variant="outline"
               onClick={() => setShowQR(true)}
-              className="w-full"
+              className="w-1/2"
             >
               Show QR Code
             </Button>
@@ -170,16 +208,9 @@ END:VCARD`;
             <Button
               variant="outline"
               onClick={handleDownload}
-              className="w-full"
+              className="w-1/2"
             >
-              Download Contact Card
-            </Button>
-
-            <Button variant="secondary" asChild className="w-full">
-              <Link href="/">
-                <Home className="h-4 w-4 mr-2" />
-                View Full Profile
-              </Link>
+              Download Contact
             </Button>
           </div>
         </div>
