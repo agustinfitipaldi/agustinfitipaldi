@@ -6,6 +6,7 @@ import { Github, Linkedin, Mail, Home } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ModeToggle } from "@/components/mode-toggle";
+import { useToast } from "@/hooks/use-toast";
 
 // Add these type definitions
 interface NDEFRecord {
@@ -17,7 +18,19 @@ interface NDEFMessage {
   records: NDEFRecord[];
 }
 
+// Add to your existing type definitions
+interface PermissionDescriptor {
+  name: "nfc";
+}
+
+interface PermissionStatus {
+  state: "granted" | "denied" | "prompt";
+}
+
 declare global {
+  interface Permissions {
+    query(descriptor: PermissionDescriptor): Promise<PermissionStatus>;
+  }
   interface Window {
     NDEFReader: {
       new (): {
@@ -33,6 +46,8 @@ export default function BusinessCard() {
   const [nfcStatus, setNfcStatus] = useState<
     "idle" | "loading" | "ready" | "error"
   >("idle");
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const { toast } = useToast();
 
   useEffect(() => {
     // Check if Web NFC is supported
@@ -44,7 +59,20 @@ export default function BusinessCard() {
   const shareViaNFC = async () => {
     try {
       setNfcStatus("loading");
+      setErrorMessage("");
+      console.log("Starting NFC write...");
+
       const ndef = new window.NDEFReader();
+      console.log("NDEFReader created");
+
+      try {
+        const permissionStatus = await navigator.permissions.query({
+          name: "nfc" as PermissionName,
+        });
+        console.log("NFC Permission status:", permissionStatus.state);
+      } catch (permError) {
+        console.log("Permission check error:", permError);
+      }
 
       await ndef.write({
         records: [
@@ -54,13 +82,26 @@ export default function BusinessCard() {
           },
         ],
       });
+      console.log("Write successful");
 
       setNfcStatus("ready");
       setTimeout(() => setNfcStatus("idle"), 3000);
     } catch (error) {
-      console.error("NFC sharing failed:", error);
+      console.log("NFC Error:", error);
+      const errorMsg = error instanceof Error ? error.message : "Unknown error";
+      setErrorMessage(errorMsg);
       setNfcStatus("error");
-      setTimeout(() => setNfcStatus("idle"), 3000);
+
+      toast({
+        variant: "destructive",
+        title: "NFC Error",
+        description: errorMsg,
+      });
+
+      setTimeout(() => {
+        setNfcStatus("idle");
+        setErrorMessage("");
+      }, 5000);
     }
   };
 
@@ -158,26 +199,31 @@ export default function BusinessCard() {
 
           {/* Add this before the "Back to Home" button */}
           {nfcSupported && (
-            <Button
-              variant="outline"
-              onClick={shareViaNFC}
-              className="w-full mb-2 relative"
-              disabled={nfcStatus === "loading" || nfcStatus === "ready"}
-            >
-              {nfcStatus === "loading" && (
-                <span className="mr-2 animate-spin">⭕</span>
+            <>
+              <Button
+                variant="outline"
+                onClick={shareViaNFC}
+                className="w-full mb-2 relative"
+                disabled={nfcStatus === "loading" || nfcStatus === "ready"}
+              >
+                {nfcStatus === "loading" && (
+                  <span className="mr-2 animate-spin">⭕</span>
+                )}
+                {nfcStatus === "ready" && <span className="mr-2">✅</span>}
+                {nfcStatus === "error" && <span className="mr-2">❌</span>}
+                {nfcStatus === "idle" && <span className="mr-2">📱</span>}
+                {nfcStatus === "loading"
+                  ? "Preparing NFC..."
+                  : nfcStatus === "ready"
+                  ? "Ready! Tap device"
+                  : nfcStatus === "error"
+                  ? "Error - Try again"
+                  : "Share via NFC"}
+              </Button>
+              {errorMessage && (
+                <p className="text-sm text-destructive mb-2">{errorMessage}</p>
               )}
-              {nfcStatus === "ready" && <span className="mr-2">✅</span>}
-              {nfcStatus === "error" && <span className="mr-2">❌</span>}
-              {nfcStatus === "idle" && <span className="mr-2">📱</span>}
-              {nfcStatus === "loading"
-                ? "Preparing NFC..."
-                : nfcStatus === "ready"
-                ? "Ready! Tap device"
-                : nfcStatus === "error"
-                ? "Error - Try again"
-                : "Share via NFC"}
-            </Button>
+            </>
           )}
 
           {/* Existing Back to Home button */}
