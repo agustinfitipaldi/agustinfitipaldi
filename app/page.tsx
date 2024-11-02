@@ -1,101 +1,98 @@
-import Image from "next/image";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Github, Linkedin, Mail } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <main className="min-h-screen p-8 max-w-2xl mx-auto">
+      {/* Header Section */}
+      <div className="flex items-start justify-between mb-12">
+        <div>
+          <h1 className="text-4xl font-bold mb-2">Agustin Fitipaldi</h1>
+          <p className="text-muted-foreground text-lg">
+            Economics Major and Systems Operations Specialist
+          </p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+        <Avatar className="h-32 w-32">
+          <AvatarImage
+            src="/pfp.jpg"
+            alt="Agustin Fitipaldi"
+            className="object-cover"
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+          <AvatarFallback>AF</AvatarFallback>
+        </Avatar>
+      </div>
+
+      {/* About Section */}
+      <section className="mb-12">
+        <p className="text-lg leading-relaxed">
+          I am an undergrad majoring in Economics at University of California,
+          Santa Barbara. I&apos;ve got an intense passion and curiosity for the
+          complex systems we&apos;ve created to manage the resources around us.
+          In particular, I&apos;m interested in learning, and eventually
+          contributing to research, on the ecosystems governments can create to
+          better facilitate the human experience.
+          <br />
+          <br />
+          I&apos;m pursuing grad school, and would love to explore internships
+          or other job experiences surrounding economics in government.
+          <br />
+          <br />
+          Outside of work, I&apos;m an avid reader with a penchant for 18th and
+          19th century history, diaries, and letters. I also enjoy road cycling,
+          watching football and working on my car.
+        </p>
+      </section>
+
+      {/* Projects/Work Section */}
+      {/* <section className="mb-12">
+        <h2 className="text-2xl font-semibold mb-4">Featured Work</h2>
+        <div className="grid gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-semibold">Project Name</h3>
+                  <p className="text-muted-foreground">
+                    Brief description of the project
+                  </p>
+                </div>
+                <Button variant="ghost" size="icon">
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section> */}
+
+      {/* Social Links */}
+      <footer className="flex gap-4">
+        <Button variant="ghost" size="icon" asChild>
+          <a
+            href="https://github.com/agustinfitipaldi"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Github className="h-5 w-5" />
+          </a>
+        </Button>
+        <Button variant="ghost" size="icon" asChild>
+          <a
+            href="https://linkedin.com/in/agustinfitipaldi"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Linkedin className="h-5 w-5" />
+          </a>
+        </Button>
+        <Button variant="ghost" size="icon" asChild>
+          <a href="mailto:agustin@fitipaldi.com">
+            <Mail className="h-5 w-5" />
+          </a>
+        </Button>
       </footer>
-    </div>
+    </main>
   );
 }
