@@ -10,9 +10,36 @@ export default function Home() {
       <div className="flex items-start justify-between mb-12">
         <div>
           <h1 className="text-4xl font-bold mb-2">Agustin Fitipaldi</h1>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-lg mb-4">
             Economics Major and Systems Operations Specialist
           </p>
+          <div className="flex gap-4">
+            <Button variant="ghost" size="icon" asChild>
+              <a
+                href="https://github.com/agustinfitipaldi"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="GitHub"
+              >
+                <Github className="h-5 w-5" />
+              </a>
+            </Button>
+            <Button variant="ghost" size="icon" asChild>
+              <a
+                href="https://linkedin.com/in/agustinfitipaldi"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="LinkedIn"
+              >
+                <Linkedin className="h-5 w-5" />
+              </a>
+            </Button>
+            <Button variant="ghost" size="icon" asChild>
+              <a href="mailto:agustin@fitipaldi.com" title="Email">
+                <Mail className="h-5 w-5" />
+              </a>
+            </Button>
+          </div>
         </div>
         <Avatar className="h-32 w-32">
           <AvatarImage
@@ -66,35 +93,6 @@ export default function Home() {
           </Card>
         </div>
       </section> */}
-
-      {/* Social Links */}
-      <footer className="flex gap-4">
-        <Button variant="ghost" size="icon" asChild>
-          <a
-            href="https://github.com/agustinfitipaldi"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="GitHub"
-          >
-            <Github className="h-5 w-5" />
-          </a>
-        </Button>
-        <Button variant="ghost" size="icon" asChild>
-          <a
-            href="https://linkedin.com/in/agustinfitipaldi"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="LinkedIn"
-          >
-            <Linkedin className="h-5 w-5" />
-          </a>
-        </Button>
-        <Button variant="ghost" size="icon" asChild>
-          <a href="mailto:agustin@fitipaldi.com" title="Email">
-            <Mail className="h-5 w-5" />
-          </a>
-        </Button>
-      </footer>
     </main>
   );
 }
