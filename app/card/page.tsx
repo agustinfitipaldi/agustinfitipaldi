@@ -22,7 +22,7 @@ export default function BusinessCard() {
     vCard.set("n", "Fitipaldi;Agustin;;;");
     vCard.set("gender", "M");
     vCard.set("bday", "2001-11-29");
-    vCard.set("title", "Economics Major & Systems Operations Specialist");
+    vCard.set("title", "Economics Major");
     vCard.set("email", "agustin@fitipaldi.com");
     vCard.set("tel", "+14157452672"); // Corrected from "phone" to "tel"
     vCard.set("url", "https://agustinfitipaldi.com");

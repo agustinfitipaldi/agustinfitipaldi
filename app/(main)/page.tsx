@@ -1,6 +1,14 @@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Github, Linkedin, Mail, CreditCard } from "lucide-react";
+import {
+  Github,
+  Linkedin,
+  Mail,
+  CreditCard,
+  Bike,
+  Instagram,
+  AudioWaveform,
+} from "lucide-react";
 import Link from "next/link";
 // import { Card, CardContent } from "@/components/ui/card";
 export default function Home() {
@@ -8,7 +16,7 @@ export default function Home() {
     <div className="p-8 max-w-2xl mx-auto">
       {/* Header Section */}
       <div className="relative mb-8">
-        <Avatar className="sm:float-right sm:ml-6 mb-4 sm:h-32 sm:w-32 h-32 w-32 mx-auto block">
+        <Avatar className="float-left mr-6 mb-4 h-32 w-32">
           <AvatarImage
             src="/pfp.jpg"
             alt="Agustin Fitipaldi"
@@ -19,9 +27,9 @@ export default function Home() {
         <div>
           <h1 className="text-4xl font-bold mb-2">Agustin Fitipaldi</h1>
           <p className="text-muted-foreground text-lg mb-4">
-            Economics Major & Systems Operations Specialist
+            Economics Major & Operations Specialist
           </p>
-          <div className="flex gap-4 items-center">
+          <div className="flex justify-between sm:justify-start sm:gap-2 items-center w-full sm:w-auto">
             <Button variant="ghost" size="icon" asChild>
               <a
                 href="https://github.com/agustinfitipaldi"
@@ -40,6 +48,24 @@ export default function Home() {
                 title="LinkedIn"
               >
                 <Linkedin className="h-5 w-5" />
+              </a>
+            </Button>
+            <Button variant="ghost" size="icon" asChild>
+              <a href="https://www.strava.com/athletes/24497691" title="Strava">
+                <Bike className="h-5 w-5" />
+              </a>
+            </Button>
+            <Button variant="ghost" size="icon" asChild>
+              <a
+                href="https://www.instagram.com/agustinfitipaldi/"
+                title="Instagram"
+              >
+                <Instagram className="h-5 w-5" />
+              </a>
+            </Button>
+            <Button variant="ghost" size="icon" asChild>
+              <a href="https://open.spotify.com/user/mussorsgy" title="Spotify">
+                <AudioWaveform className="h-5 w-5" />
               </a>
             </Button>
             <Button variant="ghost" size="icon" asChild>
