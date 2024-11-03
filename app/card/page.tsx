@@ -2,77 +2,35 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Github, Linkedin, Mail, Home } from "lucide-react";
+import { Github, Linkedin, Mail, Home, Download, QrCode } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ModeToggle } from "@/components/mode-toggle";
 import { QRCodeSVG } from "qrcode.react";
+import VCard from "vcf"; // Import the vcf library
 
 export default function BusinessCard() {
   const [orientation, setOrientation] = useState("portrait");
   const [showQR, setShowQR] = useState(false);
 
-  // Add vCard data generation function
+  // Use vcf library to generate vCard data
   const generateVCardData = () => {
-    return `BEGIN:VCARD
-VERSION:4.0
-KIND:individual
-FN:Agustin Fitipaldi
-N:Fitipaldi;Agustin;;;
-GENDER:M
-BDAY:20011129
-PHOTO;MEDIATYPE=image/jpeg:https://agustinfitipaldi.com/public/pfp.jpg
-TITLE:Economics Major & Systems Operations Specialist
-EMAIL:agustin@fitipaldi.com
-URL:https://agustinfitipaldi.com
-ORG:University of California\\, Santa Barbara
-ROLE:Student
-NOTE:Economics Major with Research Interest in Government Systems
-END:VCARD`;
+    const vCard = new VCard();
+
+    vCard.set("version", "3.0");
+    vCard.set("fn", "Agustin Fitipaldi");
+    vCard.set("n", "Fitipaldi;Agustin;;;");
+    vCard.set("gender", "M");
+    vCard.set("bday", "2001-11-29");
+    vCard.set("title", "Economics Major & Systems Operations Specialist");
+    vCard.set("email", "agustin@fitipaldi.com");
+    vCard.set("tel", "+14157452672"); // Corrected from "phone" to "tel"
+    vCard.set("url", "https://agustinfitipaldi.com");
+    vCard.set("org", "University of California, Santa Barbara");
+    vCard.set("role", "Student");
+
+    return vCard.toString();
   };
-
-  // Add download handler with improved mobile compatibility
-  //   const handleDownload = () => {
-  //     const vCardData = generateVCardData();
-  //     // Ensure proper line endings for all platforms
-  //     const formattedData = vCardData.replace(/\n/g, "\r\n");
-
-  //     // Create blob with proper MIME type
-  //     const blob = new Blob([formattedData], {
-  //       type: "text/vcard",
-  //     });
-
-  //     // For iOS Safari and some mobile browsers
-  //     if (navigator.userAgent.match(/iphone|ipad|ipod|android/i)) {
-  //       const url = window.URL.createObjectURL(blob);
-  //       const link = document.createElement("a");
-  //       link.href = url;
-  //       link.download = "agustin-fitipaldi.vcf";
-
-  //       // Trigger click immediately
-  //       const clickEvent = new MouseEvent("click", {
-  //         view: window,
-  //         bubbles: true,
-  //         cancelable: false,
-  //       });
-  //       link.dispatchEvent(clickEvent);
-
-  //       // Clean up
-  //       setTimeout(() => {
-  //         window.URL.revokeObjectURL(url);
-  //       }, 100);
-  //     } else {
-  //       // For desktop browsers
-  //       const url = window.URL.createObjectURL(blob);
-  //       const link = document.createElement("a");
-  //       link.href = url;
-  //       link.setAttribute("download", "agustin-fitipaldi.vcf");
-  //       document.body.appendChild(link);
-  //       link.click();
-  //       document.body.removeChild(link);
-  //       window.URL.revokeObjectURL(url);
-  //     }
-  //   };
 
   // Handle orientation changes
   useEffect(() => {
@@ -90,6 +48,19 @@ END:VCARD`;
     window.addEventListener("resize", handleOrientationChange);
     return () => window.removeEventListener("resize", handleOrientationChange);
   }, []);
+
+  // Function to download vCard
+  const downloadVCard = () => {
+    const element = document.createElement("a");
+    const file = new Blob([generateVCardData()], {
+      type: "text/vcard;charset=utf-8",
+    });
+    element.href = URL.createObjectURL(file);
+    element.download = "contact.vcf";
+    document.body.appendChild(element); // Required for Firefox
+    element.click();
+    document.body.removeChild(element);
+  };
 
   return (
     <main className="h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background to-muted">
@@ -195,23 +166,24 @@ END:VCARD`;
             </Button>
           </div>
 
-          <Button
-            variant="outline"
-            onClick={() => setShowQR(true)}
-            className="w-3/4 mt-2"
-          >
-            QR Code
-          </Button>
-
-          {/* Update the buttons section */}
-          <div className="flex gap-2 w-full">
-            {/* <Button
+          {/* QR Code and Download Contact Buttons */}
+          <div className="flex w-full gap-2 mt-2">
+            <Button
               variant="outline"
-              onClick={handleDownload}
+              onClick={() => setShowQR(true)}
               className="w-1/2"
             >
-              Download Contact
-            </Button> */}
+              <QrCode className="h-4 w-4 mr-2" />
+              QR Code
+            </Button>
+            <Button
+              variant="outline"
+              onClick={downloadVCard}
+              className="w-1/2 flex items-center justify-center"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Get Contact
+            </Button>
           </div>
         </div>
       </div>
