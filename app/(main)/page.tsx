@@ -25,8 +25,8 @@ export default function Home() {
           <AvatarFallback>AF</AvatarFallback>
         </Avatar>
         <div>
-          <h1 className="text-4xl font-bold mb-2">Agustin Fitipaldi</h1>
-          <p className="text-muted-foreground text-lg mb-4">
+          <h1 className="text-3xl font-bold mb-2">Agustin Fitipaldi</h1>
+          <p className="text-muted-foreground text-base sm:text-lg mb-4">
             Economics Major & Operations Specialist
           </p>
           <div className="flex justify-between sm:justify-start sm:gap-2 items-center w-full sm:w-auto">
