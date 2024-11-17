@@ -10,7 +10,8 @@ import {
   AudioWaveform,
 } from "lucide-react";
 import Link from "next/link";
-// import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+
 export default function Home() {
   return (
     <div className="p-8 max-w-2xl mx-auto">
@@ -105,30 +106,52 @@ export default function Home() {
         </p>
       </section>
 
-      {/* Projects/Work Section */}
-      {/* <section className="mb-12">
-        <h2 className="text-2xl font-semibold mb-4">Experiments</h2>
+      {/* Projects Section */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-semibold mb-4">Projects</h2>
         <div className="grid gap-4">
           <Card>
-            <CardContent className="p-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-semibold">Audio Data Transfer</h3>
-                  <p className="text-muted-foreground">
-                    Experimental feature for transferring text data via audio
-                    signals between devices
-                  </p>
+            <CardContent className="p-6">
+              <div className="flex flex-col space-y-2">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-semibold text-lg">
+                      Popup Search Extension
+                    </h3>
+                    <p className="text-muted-foreground">
+                      An Edge/Chrome extension that I created with Claude that
+                      lets you search highlighted text through a variety of
+                      custom search engines. Search can either be done through
+                      the context menu or by using (limited) keyboard shortcuts.
+                      <br />
+                      <br />
+                      Default search engines are: Kagi, Oxford English
+                      Dictionary, Webster&apos;s 1913, and UCSB Library.
+                      <br />
+                      <br />
+                      Supports settings exporting and importing.
+                    </p>
+                  </div>
+                  <Button variant="ghost" size="icon" asChild>
+                    <a
+                      href="https://github.com/agustinfitipaldi/popup-search"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Github className="h-5 w-5" />
+                    </a>
+                  </Button>
                 </div>
-                <Button variant="ghost" size="icon" asChild>
-                  <Link href="/audio-share">
-                    <Radio className="h-4 w-4" />
-                  </Link>
-                </Button>
+                <div className="flex gap-2 flex-wrap">
+                  <span className="text-xs bg-secondary px-2 py-1 rounded-md">
+                    Extension
+                  </span>
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
-      </section> */}
+      </section>
     </div>
   );
 }
