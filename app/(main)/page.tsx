@@ -109,7 +109,7 @@ export default function Home() {
       {/* Projects Section */}
       <section className="mb-12">
         <h2 className="text-2xl font-semibold mb-4">Projects</h2>
-        <div className="grid gap-4">
+        <div className="flex flex-col gap-4">
           <Card>
             <CardContent className="p-6">
               <div className="flex flex-col space-y-2">
@@ -145,6 +145,88 @@ export default function Home() {
                 <div className="flex gap-2 flex-wrap">
                   <span className="text-xs bg-secondary px-2 py-1 rounded-md">
                     Extension
+                  </span>
+                  <span className="text-xs bg-secondary px-2 py-1 rounded-md">
+                    Javascript/HTML
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex flex-col space-y-2">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-semibold text-lg">
+                      Unofficial Rotten Tomatoes API
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Needed Rotten Tomatoes data for another project but they
+                      do not give out API keys very freely, so I made my own
+                      with a scraper =)
+                      <br />
+                      <br />
+                      It uses Axios and Cheerio to scrape the data, and is
+                      hosted on Vercel.
+                    </p>
+                  </div>
+                  <Button variant="ghost" size="icon" asChild>
+                    <a
+                      href="https://github.com/agustinfitipaldi/rt-scraper"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Github className="h-5 w-5" />
+                    </a>
+                  </Button>
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  <span className="text-xs bg-secondary px-2 py-1 rounded-md">
+                    API
+                  </span>
+                  <span className="text-xs bg-secondary px-2 py-1 rounded-md">
+                    Node.js
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex flex-col space-y-2">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-semibold text-lg">
+                      Rotten Tomatoes Info
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Got sick of manually searching up movie info while
+                      browsing the Trending page on NZBGeeks, so I made this!
+                      <br />
+                      <br />
+                      Queries my Rotten Tomatoes API and displays movie info
+                      underneath each poster for easier decision making.
+                    </p>
+                  </div>
+                  <Button variant="ghost" size="icon" asChild>
+                    <a
+                      href="https://github.com/agustinfitipaldi/rotten-tomatoes-info"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Github className="h-5 w-5" />
+                    </a>
+                  </Button>
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  <span className="text-xs bg-secondary px-2 py-1 rounded-md">
+                    Extension
+                  </span>
+                  <span className="text-xs bg-secondary px-2 py-1 rounded-md">
+                    Javascript/HTML
                   </span>
                 </div>
               </div>
