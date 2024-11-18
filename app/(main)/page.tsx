@@ -45,6 +45,11 @@ export default function Home() {
     new Set(projects.flatMap((project) => project.tags))
   );
 
+  // Handle tag toggle
+  const handleTagClick = (tag: string) => {
+    setActiveFilter((currentFilter) => (currentFilter === tag ? null : tag));
+  };
+
   const filteredProjects = activeFilter
     ? projects.filter((project) => project.tags.includes(activeFilter))
     : projects;
@@ -152,24 +157,14 @@ export default function Home() {
           </span>
         </div>
 
-        {/* Tags Filter */}
+        {/* Tags Filter - Modified to remove clear button */}
         <div className="flex gap-2 flex-wrap mb-6">
-          {activeFilter && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setActiveFilter(null)}
-              className="text-xs"
-            >
-              Clear Filter
-            </Button>
-          )}
           {allTags.map((tag) => (
             <Button
               key={tag}
               variant={activeFilter === tag ? "default" : "secondary"}
               size="sm"
-              onClick={() => setActiveFilter(tag)}
+              onClick={() => handleTagClick(tag)}
               className="text-xs"
             >
               {tag}
