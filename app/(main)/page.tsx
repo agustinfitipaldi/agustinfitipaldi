@@ -17,7 +17,7 @@ import { Card, CardContent } from "@/components/ui/card";
 // Change the type name (optional but consistent)
 type Work = {
   title: string;
-  description: string;
+  description: string[];
   link?: string;
   tags: string[];
 };
@@ -31,11 +31,22 @@ function WorkCard({ work }: { work: Work }) {
       }`}
     >
       <CardContent className="p-6">
-        <div className="flex flex-col space-y-2">
+        <div className="flex flex-col space-y-4">
           <div className="flex justify-between items-start">
-            <div>
+            <div className="space-y-3">
               <h3 className="font-semibold text-lg">{work.title}</h3>
-              <p className="text-muted-foreground">{work.description}</p>
+              <div className="text-muted-foreground">
+                {work.description.map((paragraph, index) => (
+                  <p
+                    key={index}
+                    className={
+                      index < work.description.length - 1 ? "mb-2" : ""
+                    }
+                  >
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
             </div>
             {work.link && (
               <Button
@@ -70,29 +81,35 @@ export default function Home() {
   const works: Work[] = [
     {
       title: "Popup Search Extension",
-      description:
+      description: [
         "An chromium web extension created with Claude that lets you search highlighted text through a variety of popup configurable search engines using keyboard shortcuts.",
+      ],
       link: "https://github.com/agustinfitipaldi/popup-search",
       tags: ["AI", "Extension", "Javascript/HTML"],
     },
     {
       title: "Personal Rotten Tomatoes API",
-      description:
+      description: [
         "A personal use API for Rotten Tomatoes data, created with Claude. Made in conjunction with my movie info extension below.",
+      ],
       link: "https://github.com/agustinfitipaldi/rt-scraper",
       tags: ["AI", "API", "Node.js"],
     },
     {
       title: "Rotten Tomatoes Info Extension",
-      description:
+      description: [
         "Chromium web extension made with Claude that queries my Rotten Tomatoes API and displays movie info underneath each poster in nzbgeeks.",
+      ],
       link: "https://github.com/agustinfitipaldi/rotten-tomatoes-info",
       tags: ["AI", "Extension", "Javascript/HTML"],
     },
     {
       title: "DWP Viewer",
-      description:
-        "A closed-access internal customer contact management system for Mathnasium franchises. Uses a variety of tools to enable a collaborative, data-fueled email composer for customer outreach. Designed and developed almost entirely by me.",
+      description: [
+        "A closed-access internal customer contact management system for Mathnasium franchises. Uses a variety of tools to enable a collaborative, data-fueled email composer for customer outreach.",
+        "Designed and organized entirely by me. Development was done with the help of Cursor and friends =)",
+        "Writeups coming soon...",
+      ],
       tags: [
         "AI",
         "Next.js",
@@ -105,7 +122,7 @@ export default function Home() {
     },
     {
       title: "Personal Website",
-      description: "This website! Made with Next.js and Tailwind CSS.",
+      description: ["This website! Made with Next.js and Tailwind CSS."],
       link: "https://github.com/agustinfitipaldi/agustinfitipaldi",
       tags: ["AI", "Next.js", "Tailwind CSS"],
     },
