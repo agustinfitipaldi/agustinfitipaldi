@@ -108,7 +108,11 @@ export default function Home() {
 
       {/* Projects Section */}
       <section className="mb-12">
-        <h2 className="text-2xl font-semibold mb-4">Projects</h2>
+        <div className="flex items-center gap-4 mb-4">
+          <h2 className="text-2xl font-semibold">Projects</h2>
+          <div className="h-6 w-px bg-primary" />
+          <span className="text-xl font-semibold">3</span>
+        </div>
         <div className="flex flex-col gap-4">
           <Link
             href="https://github.com/agustinfitipaldi/popup-search"
