@@ -1,3 +1,5 @@
+"use client";
+import { useState } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +15,40 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function Home() {
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+
+  const projects = [
+    {
+      title: "Popup Search Extension",
+      description:
+        "An chromium web extension created with Claude that lets you search highlighted text through a variety of popup configurable search engines using keyboard shortcuts.",
+      link: "https://github.com/agustinfitipaldi/popup-search",
+      tags: ["Extension", "Javascript/HTML"],
+    },
+    {
+      title: "Unofficial Rotten Tomatoes API",
+      description:
+        "A personal use API for Rotten Tomatoes data, created with Claude. Made in conjunction with my movie info extension below.",
+      link: "https://github.com/agustinfitipaldi/rt-scraper",
+      tags: ["API", "Node.js"],
+    },
+    {
+      title: "Rotten Tomatoes Info",
+      description:
+        "Chromium web extension made with Claude that queries my Rotten Tomatoes API and displays movie info underneath each poster in nzbgeeks.",
+      link: "https://github.com/agustinfitipaldi/rotten-tomatoes-info",
+      tags: ["Extension", "Javascript/HTML"],
+    },
+  ];
+
+  const allTags = Array.from(
+    new Set(projects.flatMap((project) => project.tags))
+  );
+
+  const filteredProjects = activeFilter
+    ? projects.filter((project) => project.tags.includes(activeFilter))
+    : projects;
+
   return (
     <div className="p-8 max-w-2xl mx-auto">
       {/* Header Section */}
@@ -111,128 +147,79 @@ export default function Home() {
         <div className="flex items-center gap-4 mb-4">
           <h2 className="text-2xl font-semibold">Projects</h2>
           <div className="h-6 w-px bg-primary" />
-          <span className="text-xl font-semibold">3</span>
+          <span className="text-xl font-semibold">
+            {filteredProjects.length}
+          </span>
         </div>
+
+        {/* Tags Filter */}
+        <div className="flex gap-2 flex-wrap mb-6">
+          {activeFilter && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setActiveFilter(null)}
+              className="text-xs"
+            >
+              Clear Filter
+            </Button>
+          )}
+          {allTags.map((tag) => (
+            <Button
+              key={tag}
+              variant={activeFilter === tag ? "default" : "secondary"}
+              size="sm"
+              onClick={() => setActiveFilter(tag)}
+              className="text-xs"
+            >
+              {tag}
+            </Button>
+          ))}
+        </div>
+
         <div className="flex flex-col gap-4">
-          <Link
-            href="https://github.com/agustinfitipaldi/popup-search"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Card className="transition-colors hover:bg-muted/50 cursor-pointer">
-              <CardContent className="p-6">
-                <div className="flex flex-col space-y-2">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-semibold text-lg">
-                        Popup Search Extension
-                      </h3>
-                      <p className="text-muted-foreground">
-                        An chromium web extension created with Claude that lets
-                        you search highlighted text through a variety of popup
-                        configurable search engines using keyboard shortcuts.
-                      </p>
+          {filteredProjects.map((project) => (
+            <Link
+              key={project.title}
+              href={project.link}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Card className="transition-colors hover:bg-muted/50 cursor-pointer">
+                <CardContent className="p-6">
+                  <div className="flex flex-col space-y-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-semibold text-lg">
+                          {project.title}
+                        </h3>
+                        <p className="text-muted-foreground">
+                          {project.description}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="pointer-events-none"
+                      >
+                        <Github className="h-5 w-5" />
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="pointer-events-none"
-                    >
-                      <Github className="h-5 w-5" />
-                    </Button>
-                  </div>
-                  <div className="flex gap-2 flex-wrap">
-                    <span className="text-xs bg-secondary px-2 py-1 rounded-md">
-                      Extension
-                    </span>
-                    <span className="text-xs bg-secondary px-2 py-1 rounded-md">
-                      Javascript/HTML
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link
-            href="https://github.com/agustinfitipaldi/rt-scraper"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Card className="transition-colors hover:bg-muted/50 cursor-pointer">
-              <CardContent className="p-6">
-                <div className="flex flex-col space-y-2">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-semibold text-lg">
-                        Unofficial Rotten Tomatoes API
-                      </h3>
-                      <p className="text-muted-foreground">
-                        A personal use API for Rotten Tomatoes data, created
-                        with Claude. Made in conjunction with my movie info
-                        extension below.
-                      </p>
+                    <div className="flex gap-2 flex-wrap">
+                      {project.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="text-xs bg-secondary px-2 py-1 rounded-md"
+                        >
+                          {tag}
+                        </span>
+                      ))}
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="pointer-events-none"
-                    >
-                      <Github className="h-5 w-5" />
-                    </Button>
                   </div>
-                  <div className="flex gap-2 flex-wrap">
-                    <span className="text-xs bg-secondary px-2 py-1 rounded-md">
-                      API
-                    </span>
-                    <span className="text-xs bg-secondary px-2 py-1 rounded-md">
-                      Node.js
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link
-            href="https://github.com/agustinfitipaldi/rotten-tomatoes-info"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Card className="transition-colors hover:bg-muted/50 cursor-pointer">
-              <CardContent className="p-6">
-                <div className="flex flex-col space-y-2">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-semibold text-lg">
-                        Rotten Tomatoes Info
-                      </h3>
-                      <p className="text-muted-foreground">
-                        Chromium web extension made with Claude that queries my
-                        Rotten Tomatoes API and displays movie info underneath
-                        each poster in nzbgeeks.
-                      </p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="pointer-events-none"
-                    >
-                      <Github className="h-5 w-5" />
-                    </Button>
-                  </div>
-                  <div className="flex gap-2 flex-wrap">
-                    <span className="text-xs bg-secondary px-2 py-1 rounded-md">
-                      Extension
-                    </span>
-                    <span className="text-xs bg-secondary px-2 py-1 rounded-md">
-                      Javascript/HTML
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
         </div>
       </section>
     </div>
