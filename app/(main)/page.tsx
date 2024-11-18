@@ -14,45 +14,113 @@ import {
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 
+// Change the type name (optional but consistent)
+type Work = {
+  title: string;
+  description: string;
+  link?: string;
+  tags: string[];
+};
+
+// Update the component name and prop type
+function WorkCard({ work }: { work: Work }) {
+  return (
+    <Card
+      className={`transition-colors hover:bg-muted/50 ${
+        work.link ? "cursor-pointer" : ""
+      }`}
+    >
+      <CardContent className="p-6">
+        <div className="flex flex-col space-y-2">
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="font-semibold text-lg">{work.title}</h3>
+              <p className="text-muted-foreground">{work.description}</p>
+            </div>
+            {work.link && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="pointer-events-none"
+              >
+                <Github className="h-5 w-5" />
+              </Button>
+            )}
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {work.tags.map((tag) => (
+              <span
+                key={tag}
+                className="text-xs bg-secondary px-2 py-1 rounded-md"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function Home() {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
-  const projects = [
+  // Rename the array and its type
+  const works: Work[] = [
     {
       title: "Popup Search Extension",
       description:
         "An chromium web extension created with Claude that lets you search highlighted text through a variety of popup configurable search engines using keyboard shortcuts.",
       link: "https://github.com/agustinfitipaldi/popup-search",
-      tags: ["Extension", "Javascript/HTML"],
+      tags: ["AI", "Extension", "Javascript/HTML"],
     },
     {
-      title: "Unofficial Rotten Tomatoes API",
+      title: "Personal Rotten Tomatoes API",
       description:
         "A personal use API for Rotten Tomatoes data, created with Claude. Made in conjunction with my movie info extension below.",
       link: "https://github.com/agustinfitipaldi/rt-scraper",
-      tags: ["API", "Node.js"],
+      tags: ["AI", "API", "Node.js"],
     },
     {
-      title: "Rotten Tomatoes Info",
+      title: "Rotten Tomatoes Info Extension",
       description:
         "Chromium web extension made with Claude that queries my Rotten Tomatoes API and displays movie info underneath each poster in nzbgeeks.",
       link: "https://github.com/agustinfitipaldi/rotten-tomatoes-info",
-      tags: ["Extension", "Javascript/HTML"],
+      tags: ["AI", "Extension", "Javascript/HTML"],
+    },
+    {
+      title: "DWP Viewer",
+      description:
+        "A closed-access internal customer contact management system for Mathnasium franchises. Uses a variety of tools to enable a collaborative, data-fueled email composer for customer outreach. Designed and developed almost entirely by me.",
+      tags: [
+        "AI",
+        "Next.js",
+        "Tailwind CSS",
+        "PostgreSQL",
+        "NextAuth",
+        "Resend",
+        "Liveblocks",
+      ],
+    },
+    {
+      title: "Personal Website",
+      description: "This website! Made with Next.js and Tailwind CSS.",
+      link: "https://github.com/agustinfitipaldi/agustinfitipaldi",
+      tags: ["AI", "Next.js", "Tailwind CSS"],
     },
   ];
 
-  const allTags = Array.from(
-    new Set(projects.flatMap((project) => project.tags))
-  );
+  const allTags = Array.from(new Set(works.flatMap((work) => work.tags)));
 
   // Handle tag toggle
   const handleTagClick = (tag: string) => {
     setActiveFilter((currentFilter) => (currentFilter === tag ? null : tag));
   };
 
-  const filteredProjects = activeFilter
-    ? projects.filter((project) => project.tags.includes(activeFilter))
-    : projects;
+  const filteredWorks = activeFilter
+    ? works.filter((work) => work.tags.includes(activeFilter))
+    : works;
 
   return (
     <div className="p-8 max-w-2xl mx-auto">
@@ -129,32 +197,34 @@ export default function Home() {
       {/* About Section */}
       <section className="mb-12">
         <p className="text-lg leading-relaxed">
-          I am an undergrad majoring in Economics at University of California,
-          Santa Barbara. I&apos;ve got an intense passion and curiosity for the
-          complex systems we&apos;ve created to manage the resources around us.
-          In particular, I&apos;m interested in learning, and eventually
-          contributing to research, on the ecosystems governments can create to
-          better facilitate the human experience.
+          Hi! Welcome to my website =)
           <br />
           <br />
-          I&apos;m pursuing grad school, and would love to explore internships
-          or other job experiences surrounding economics in government.
+          I&apos;m an undergrad double majoring in Economics, and Probability
+          &amp; Statistics at the University of California, Santa Barbara.
+          I&apos;m looking to pursue grad school in economics, and am interested
+          in research surrounding the intersection of disciplines such as
+          economics, history, and knowledge management.
           <br />
           <br />
-          Outside of work, I&apos;m an avid reader with a penchant for 18th and
-          19th century history, diaries, and letters. I also enjoy road cycling,
-          watching football and working on my car.
+          I work as an Operations Specialist for a couple of Mathnasium
+          franchises in the Bay Area, where my responsibilities currently
+          involve the development and maintenance of a customer contact
+          management system.
+          <br />
+          <br />
+          All of my web development is largely a product of using Claude Sonnet
+          3.5, and O1-Mini in Cursor to bring my ideas to reality. Note the AI
+          tag in my project list below to filter for it.
         </p>
       </section>
 
-      {/* Projects Section */}
+      {/* Work Section */}
       <section className="mb-12">
         <div className="flex items-center gap-4 mb-4">
-          <h2 className="text-2xl font-semibold">Projects</h2>
+          <h2 className="text-2xl font-semibold">Work</h2>
           <div className="h-6 w-px bg-primary" />
-          <span className="text-xl font-semibold">
-            {filteredProjects.length}
-          </span>
+          <span className="text-xl font-semibold">{filteredWorks.length}</span>
         </div>
 
         {/* Tags Filter - Modified to remove clear button */}
@@ -173,48 +243,20 @@ export default function Home() {
         </div>
 
         <div className="flex flex-col gap-4">
-          {filteredProjects.map((project) => (
-            <Link
-              key={project.title}
-              href={project.link}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Card className="transition-colors hover:bg-muted/50 cursor-pointer">
-                <CardContent className="p-6">
-                  <div className="flex flex-col space-y-2">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-semibold text-lg">
-                          {project.title}
-                        </h3>
-                        <p className="text-muted-foreground">
-                          {project.description}
-                        </p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="pointer-events-none"
-                      >
-                        <Github className="h-5 w-5" />
-                      </Button>
-                    </div>
-                    <div className="flex gap-2 flex-wrap">
-                      {project.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-xs bg-secondary px-2 py-1 rounded-md"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+          {filteredWorks.map((work) =>
+            work.link ? (
+              <Link
+                key={work.title}
+                href={work.link}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <WorkCard work={work} />
+              </Link>
+            ) : (
+              <WorkCard key={work.title} work={work} />
+            )
+          )}
         </div>
       </section>
     </div>
