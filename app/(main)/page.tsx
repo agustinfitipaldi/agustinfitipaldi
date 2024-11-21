@@ -15,7 +15,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 
 // Change the type name (optional but consistent)
-type Work = {
+type Project = {
   title: string;
   description: string[];
   link?: string;
@@ -23,24 +23,24 @@ type Work = {
 };
 
 // Update the component name and prop type
-function WorkCard({ work }: { work: Work }) {
+function ProjectCard({ project }: { project: Project }) {
   return (
     <Card
       className={`transition-colors hover:bg-muted/50 ${
-        work.link ? "cursor-pointer" : ""
+        project.link ? "cursor-pointer" : ""
       }`}
     >
       <CardContent className="p-6">
         <div className="flex flex-col space-y-4">
           <div className="flex justify-between items-start">
             <div className="space-y-3">
-              <h3 className="font-semibold text-lg">{work.title}</h3>
+              <h3 className="font-semibold text-lg">{project.title}</h3>
               <div className="text-muted-foreground">
-                {work.description.map((paragraph, index) => (
+                {project.description.map((paragraph, index) => (
                   <p
                     key={index}
                     className={
-                      index < work.description.length - 1 ? "mb-2" : ""
+                      index < project.description.length - 1 ? "mb-2" : ""
                     }
                   >
                     {paragraph}
@@ -48,7 +48,7 @@ function WorkCard({ work }: { work: Work }) {
                 ))}
               </div>
             </div>
-            {work.link && (
+            {project.link && (
               <Button
                 variant="ghost"
                 size="icon"
@@ -59,7 +59,7 @@ function WorkCard({ work }: { work: Work }) {
             )}
           </div>
           <div className="flex gap-2 flex-wrap">
-            {work.tags.map((tag) => (
+            {project.tags.map((tag) => (
               <span
                 key={tag}
                 className="text-xs bg-secondary px-2 py-1 rounded-md"
@@ -78,7 +78,7 @@ export default function Home() {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
   // Rename the array and its type
-  const works: Work[] = [
+  const projects: Project[] = [
     {
       title: "Popup Search Extension",
       description: [
@@ -128,16 +128,26 @@ export default function Home() {
     },
   ];
 
-  const allTags = Array.from(new Set(works.flatMap((work) => work.tags)));
+  const allTags = Array.from(
+    new Set(projects.flatMap((project) => project.tags))
+  );
+
+  // Add this: Calculate tag counts
+  const tagCounts = projects.reduce((acc, project) => {
+    project.tags.forEach((tag) => {
+      acc[tag] = (acc[tag] || 0) + 1;
+    });
+    return acc;
+  }, {} as Record<string, number>);
 
   // Handle tag toggle
   const handleTagClick = (tag: string) => {
     setActiveFilter((currentFilter) => (currentFilter === tag ? null : tag));
   };
 
-  const filteredWorks = activeFilter
-    ? works.filter((work) => work.tags.includes(activeFilter))
-    : works;
+  const filteredProjects = activeFilter
+    ? projects.filter((project) => project.tags.includes(activeFilter))
+    : projects;
 
   return (
     <div className="p-8 max-w-2xl mx-auto">
@@ -239,12 +249,14 @@ export default function Home() {
       {/* Work Section */}
       <section className="mb-12">
         <div className="flex items-center gap-4 mb-4">
-          <h2 className="text-2xl font-semibold">Work</h2>
+          <h2 className="text-2xl font-semibold">Projects</h2>
           <div className="h-6 w-px bg-primary" />
-          <span className="text-xl font-semibold">{filteredWorks.length}</span>
+          <span className="text-xl font-semibold">
+            {filteredProjects.length}
+          </span>
         </div>
 
-        {/* Tags Filter - Modified to remove clear button */}
+        {/* Tags Filter - Updated to include counts */}
         <div className="flex gap-2 flex-wrap mb-6">
           {allTags.map((tag) => (
             <Button
@@ -254,24 +266,25 @@ export default function Home() {
               onClick={() => handleTagClick(tag)}
               className="text-xs"
             >
-              {tag}
+              {tag}{" "}
+              <span className="text-muted-foreground">{tagCounts[tag]}</span>
             </Button>
           ))}
         </div>
 
         <div className="flex flex-col gap-4">
-          {filteredWorks.map((work) =>
-            work.link ? (
+          {filteredProjects.map((project) =>
+            project.link ? (
               <Link
-                key={work.title}
-                href={work.link}
+                key={project.title}
+                href={project.link}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <WorkCard work={work} />
+                <ProjectCard project={project} />
               </Link>
             ) : (
-              <WorkCard key={work.title} work={work} />
+              <ProjectCard key={project.title} project={project} />
             )
           )}
         </div>
