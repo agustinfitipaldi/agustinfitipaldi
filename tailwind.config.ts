@@ -69,10 +69,22 @@ const config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "footnote-flash": {
+          "0%, 100%": {
+            textShadow: "0 0 0 rgba(250, 204, 21, 0)",
+            color: "inherit",
+          },
+          "50%": {
+            textShadow:
+              "0 0 12px rgba(250, 204, 21, 0.9), 0 0 4px rgba(250, 204, 21, 0.4)",
+            color: "rgb(250, 204, 21)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "footnote-flash": "footnote-flash 1.5s ease-in-out",
       },
     },
   },

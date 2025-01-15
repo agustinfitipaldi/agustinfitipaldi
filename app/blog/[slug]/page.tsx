@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { FootnoteEnhancer } from "@/components/footnote-enhancer";
 
 type Props = {
   params: {
@@ -33,7 +34,7 @@ export default async function BlogPost({ params }: Props) {
 
   return (
     <div>
-      <article className="prose dark:prose-invert prose-slate mx-auto pt-[25vh] pb-[35vh] px-8 max-w-2xl prose-a:no-underline prose-a:text-muted-foreground hover:prose-a:text-foreground prose-a:transition-colors [&_sup_a]:text-sm [&_sup_a]:font-mono [&_sup_a]:text-muted-foreground [&_sup]:ml-0.5 [&_sup]:top-[-0.55em]">
+      <article className="prose dark:prose-invert prose-slate mx-auto pt-[25vh] pb-[35vh] px-8 max-w-2xl prose-a:no-underline prose-a:text-muted-foreground hover:prose-a:text-foreground prose-a:transition-colors [&_sup_a]:text-sm [&_sup_a]:font-mono [&_sup_a]:text-muted-foreground [&_sup]:ml-0.5 [&_sup]:top-[-0.55em] [&_.footnote-backref]:no-underline [&_.footnote-backref]:text-muted-foreground [&_.footnote-backref]:hover:text-foreground [&_.footnote-backref]:ml-1 [&_.footnote-backref]:font-mono [&_section.footnotes_a]:no-underline [&_section.footnotes_a]:text-muted-foreground [&_section.footnotes_a]:hover:text-foreground [&_section.footnotes_a]:font-mono [&_section.footnotes_.data-footnote-backref]:no-underline [&_section.footnotes_.data-footnote-backref]:bg-transparent [&_section.footnotes_.data-footnote-backref]:text-muted-foreground [&_section.footnotes_.data-footnote-backref]:hover:text-foreground [&_.flash-highlight]:animate-footnote-flash">
         <header className="mb-8 not-prose">
           <h1 className="mb-2 text-4xl font-bold">{post.title}</h1>
           <div className="flex items-center gap-4 text-muted-foreground">
@@ -60,6 +61,7 @@ export default async function BlogPost({ params }: Props) {
           {post.content}
         </ReactMarkdown>
       </article>
+      <FootnoteEnhancer />
     </div>
   );
 }

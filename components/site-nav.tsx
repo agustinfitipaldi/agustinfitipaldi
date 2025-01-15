@@ -14,10 +14,7 @@ type NavItem = {
   href: string;
 };
 
-const mainNav: NavItem[] = [
-  { title: "Home", href: "/" },
-  { title: "Blog", href: "/blog" },
-];
+const mainNav: NavItem[] = [{ title: "Home", href: "/" }];
 
 function NavLink({
   href,
@@ -35,7 +32,7 @@ function NavLink({
     <Link
       href={href}
       className={cn(
-        "transition-colors hover:text-foreground/80 font-semibold relative after:absolute after:-right-4 after:top-1/2 after:-translate-y-1/2 after:w-1 after:h-10 after:rounded-full",
+        "transition-colors hover:text-foreground/80 font-semibold relative after:absolute after:-right-4 after:top-1/2 after:-translate-y-[20px] after:w-1 after:h-12 after:rounded-full",
         isActive
           ? "text-foreground after:bg-foreground"
           : "text-foreground/60 after:bg-transparent",
@@ -110,9 +107,6 @@ export function SiteNav({ posts }: { posts: BlogPost[] }) {
                   </nav>
                   <div className="flex flex-col gap-6 items-end">
                     <div className="space-y-4 w-full">
-                      <h4 className="text-2xl font-medium text-right">
-                        Recent Posts
-                      </h4>
                       <div className="h-px bg-border" />
                     </div>
                     <BlogLinks posts={posts} />
@@ -138,8 +132,11 @@ export function SiteNav({ posts }: { posts: BlogPost[] }) {
       )}
 
       {/* Desktop Navigation */}
-      <div className="hidden lg:flex lg:flex-col lg:w-[300px] lg:fixed lg:right-[calc(50%+15rem)] lg:top-[33vh] lg:h-[calc(100vh-4rem)] lg:gap-8">
+      <div className="hidden lg:flex lg:flex-col lg:w-[300px] lg:fixed lg:right-[calc(50%+15rem)] lg:top-[33vh] lg:h-[calc(100vh-4rem)] lg:gap-8 lg:z-10">
         <nav className="flex flex-col gap-6 items-end">
+          <div className="-mb-2 -mr-4">
+            <ModeToggle />
+          </div>
           {mainNav.map((item) => (
             <NavLink key={item.href} href={item.href} className="text-4xl">
               {item.title}
@@ -148,7 +145,6 @@ export function SiteNav({ posts }: { posts: BlogPost[] }) {
         </nav>
         <div className="flex flex-col gap-6 items-end">
           <div className="space-y-4 w-full">
-            <h4 className="text-2xl font-medium text-right">Recent Posts</h4>
             <div className="h-px bg-border" />
           </div>
           <BlogLinks posts={posts} />

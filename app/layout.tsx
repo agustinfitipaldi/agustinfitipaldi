@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SiteNav } from "@/components/site-nav";
 import { getAllPosts } from "@/lib/blog/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -65,11 +66,11 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex flex-col min-h-screen">
+          <div className="flex flex-col min-h-screen overflow-clip">
             <SiteNav posts={posts} />
-            <main className="flex-1 lg:ml-[250px] pt-24 lg:pt-0">
-              {children}
-            </main>
+            <ScrollArea type="hover" className="flex-1 lg:ml-[250px]">
+              <main className="pt-24 lg:pt-0">{children}</main>
+            </ScrollArea>
           </div>
         </ThemeProvider>
       </body>
