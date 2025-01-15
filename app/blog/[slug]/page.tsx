@@ -31,30 +31,32 @@ export default async function BlogPost({ params }: Props) {
   }
 
   return (
-    <article className="prose dark:prose-invert prose-slate mx-auto p-8 max-w-2xl">
-      <header className="mb-8 not-prose">
-        <h1 className="mb-2 text-4xl font-bold">{post.title}</h1>
-        <div className="flex items-center gap-4 text-muted-foreground">
-          <time dateTime={post.date}>
-            {new Date(post.date).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </time>
-          <div className="flex gap-2">
-            {post.tags.map((tag) => (
-              <span
-                key={tag}
-                className="text-xs bg-secondary px-2 py-1 rounded-md"
-              >
-                {tag}
-              </span>
-            ))}
+    <div className="min-h-[200vh]">
+      <article className="prose dark:prose-invert prose-slate mx-auto p-8 max-w-2xl">
+        <header className="mb-8 not-prose">
+          <h1 className="mb-2 text-4xl font-bold">{post.title}</h1>
+          <div className="flex items-center gap-4 text-muted-foreground">
+            <time dateTime={post.date}>
+              {new Date(post.date).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </time>
+            <div className="flex gap-2">
+              {post.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="text-xs bg-secondary px-2 py-1 rounded-md"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
-      </header>
-      <ReactMarkdown>{post.content}</ReactMarkdown>
-    </article>
+        </header>
+        <ReactMarkdown>{post.content}</ReactMarkdown>
+      </article>
+    </div>
   );
 }

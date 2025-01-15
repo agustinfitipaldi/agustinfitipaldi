@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { ModeToggle } from "@/components/mode-toggle";
+import { SiteNav } from "@/components/site-nav";
+import { getAllPosts } from "@/lib/blog/utils";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -45,11 +46,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const posts = await getAllPosts();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -63,10 +66,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <div className="flex flex-col min-h-screen">
-            <header className="flex justify-center py-2">
-              <ModeToggle />
-            </header>
-            <main className="flex-1">{children}</main>
+            <SiteNav posts={posts} />
+            <main className="flex-1 lg:ml-[250px] pt-24 lg:pt-0">
+              {children}
+            </main>
           </div>
         </ThemeProvider>
       </body>
