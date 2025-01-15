@@ -2,6 +2,7 @@ import { getPostBySlug } from "@/lib/blog/utils";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type Props = {
   params: {
@@ -31,8 +32,8 @@ export default async function BlogPost({ params }: Props) {
   }
 
   return (
-    <div className="min-h-[200vh]">
-      <article className="prose dark:prose-invert prose-slate mx-auto p-8 max-w-2xl">
+    <div>
+      <article className="prose dark:prose-invert prose-slate mx-auto pt-[25vh] pb-[35vh] px-8 max-w-2xl prose-a:no-underline prose-a:text-muted-foreground hover:prose-a:text-foreground prose-a:transition-colors [&_sup_a]:text-sm [&_sup_a]:font-mono [&_sup_a]:text-muted-foreground [&_sup]:ml-0.5 [&_sup]:top-[-0.55em]">
         <header className="mb-8 not-prose">
           <h1 className="mb-2 text-4xl font-bold">{post.title}</h1>
           <div className="flex items-center gap-4 text-muted-foreground">
@@ -55,7 +56,9 @@ export default async function BlogPost({ params }: Props) {
             </div>
           </div>
         </header>
-        <ReactMarkdown>{post.content}</ReactMarkdown>
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {post.content}
+        </ReactMarkdown>
       </article>
     </div>
   );
