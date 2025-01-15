@@ -10,8 +10,8 @@ import {
   AudioWaveform,
 } from "lucide-react";
 import Link from "next/link";
-import { BlogSection } from "@/components/blog-section";
-import { getAllPosts } from "@/lib/blog/utils";
+import { WritingSection } from "@/components/writing-section";
+import { getAllPosts } from "@/lib/writing/utils";
 import { ProjectsSection } from "@/components/projects-section";
 
 export default async function Page() {
@@ -109,16 +109,16 @@ export default async function Page() {
           <br />
           <br />
           All of my web development is largely a product of using Claude Sonnet
-          3.5, and O1-Mini in Cursor to bring my ideas to reality. Note the AI
-          tag in my project list below to filter for it.
+          3.5 in Cursor to bring my ideas to reality. Note the AI tag in my
+          project list below to filter for it.
         </p>
       </section>
 
+      {/* Writing Section */}
+      <WritingSection posts={posts} />
+
       {/* Projects Section */}
       <ProjectsSection />
-
-      {/* Blog Section */}
-      <BlogSection posts={posts} />
     </div>
   );
 }

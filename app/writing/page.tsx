@@ -1,21 +1,21 @@
-import { getAllPosts } from "@/lib/blog/utils";
+import { getAllPosts } from "@/lib/writing/utils";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata = {
-  title: "Blog - Agustin Fitipaldi",
+  title: "writing - Agustin Fitipaldi",
   description: "My thoughts on economics, technology, and more.",
 };
 
-export default async function BlogIndex() {
+export default async function writingIndex() {
   const posts = await getAllPosts();
 
   return (
     <div className="max-w-2xl mx-auto p-8">
-      <h1 className="text-4xl font-bold mb-8">Blog</h1>
+      <h1 className="text-4xl font-bold mb-8">writing</h1>
       <div className="flex flex-col gap-4">
         {posts.map((post) => (
-          <Link key={post.slug} href={`/blog/${post.slug}`}>
+          <Link key={post.slug} href={`/writing/${post.slug}`}>
             <Card className="transition-colors hover:bg-muted/50">
               <CardContent className="p-6">
                 <div className="space-y-2">

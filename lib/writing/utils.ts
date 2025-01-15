@@ -3,9 +3,9 @@ import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
 
-const postsDirectory = path.join(process.cwd(), "content/blog");
+const postsDirectory = path.join(process.cwd(), "content/writing");
 
-export type BlogPost = {
+export type writingPost = {
   slug: string;
   title: string;
   date: string;
@@ -13,7 +13,7 @@ export type BlogPost = {
   content: string;
 };
 
-export async function getAllPosts(): Promise<BlogPost[]> {
+export async function getAllPosts(): Promise<writingPost[]> {
   console.log("Reading from directory:", postsDirectory);
   const fileNames = fs.readdirSync(postsDirectory);
   console.log("Found files:", fileNames);
@@ -45,7 +45,7 @@ export async function getAllPosts(): Promise<BlogPost[]> {
   return allPostsData;
 }
 
-export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
+export async function getPostBySlug(slug: string): Promise<writingPost | null> {
   try {
     const fullPath = path.join(postsDirectory, `${slug}.md`);
     const fileContents = fs.readFileSync(fullPath, "utf8");

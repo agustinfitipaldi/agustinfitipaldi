@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { Menu, ArrowUp } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
-import { BlogPost } from "@/lib/blog/utils";
+import { writingPost } from "@/lib/writing/utils";
 import { ModeToggle } from "./mode-toggle";
 import { useScroll } from "@/hooks/use-scroll";
 
@@ -44,13 +44,13 @@ function NavLink({
   );
 }
 
-function BlogLinks({ posts }: { posts: BlogPost[] }) {
+function WritingLinks({ posts }: { posts: writingPost[] }) {
   return (
     <div className="space-y-3">
       {posts.map((post) => (
         <NavLink
           key={post.slug}
-          href={`/blog/${post.slug}`}
+          href={`/writing/${post.slug}`}
           className="block py-1 text-lg lg:text-xl lg:text-right"
         >
           {post.title}
@@ -61,9 +61,9 @@ function BlogLinks({ posts }: { posts: BlogPost[] }) {
 }
 
 // Pages where the nav should be fixed to viewport
-const fixedNavPages = ["/", "/blog"];
+const fixedNavPages = ["/", "/writing"];
 
-export function SiteNav({ posts }: { posts: BlogPost[] }) {
+export function SiteNav({ posts }: { posts: writingPost[] }) {
   const { scrolledToTop } = useScroll();
   const pathname = usePathname();
   const isFixedNav = fixedNavPages.includes(pathname);
@@ -109,7 +109,7 @@ export function SiteNav({ posts }: { posts: BlogPost[] }) {
                     <div className="space-y-4 w-full">
                       <div className="h-px bg-border" />
                     </div>
-                    <BlogLinks posts={posts} />
+                    <WritingLinks posts={posts} />
                   </div>
                 </div>
               </SheetContent>
@@ -147,7 +147,7 @@ export function SiteNav({ posts }: { posts: BlogPost[] }) {
           <div className="space-y-4 w-full">
             <div className="h-px bg-border" />
           </div>
-          <BlogLinks posts={posts} />
+          <WritingLinks posts={posts} />
         </div>
       </div>
     </>

@@ -68,6 +68,14 @@ export function ProjectsSection() {
 
   const projects: Project[] = [
     {
+      title: "ettle",
+      description: [
+        "An entirely custom task manager built for myself on Supabase and hosted on Cloudflare. In early development but open for use by others.",
+      ],
+      link: "https://ettle.me",
+      tags: ["AI", "Next.js", "Tailwind CSS", "Supabase", "Cloudflare"],
+    },
+    {
       title: "Popup Search Extension",
       description: [
         "An chromium web extension created with Claude that lets you search highlighted text through a variety of popup configurable search engines using keyboard shortcuts.",
