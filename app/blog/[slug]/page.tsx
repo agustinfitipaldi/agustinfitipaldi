@@ -5,13 +5,13 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { FootnoteEnhancer } from "@/components/footnote-enhancer";
 
-type Props = {
+export async function generateMetadata({
+  params,
+}: {
   params: {
     slug: string;
   };
-};
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+}): Promise<Metadata> {
   const post = await getPostBySlug(params.slug);
   if (!post) {
     return {
@@ -25,7 +25,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function BlogPost({ params }: Props) {
+export default async function BlogPost({
+  params,
+}: {
+  params: {
+    slug: string;
+  };
+}) {
   const post = await getPostBySlug(params.slug);
 
   if (!post) {
