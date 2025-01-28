@@ -103,7 +103,7 @@ export function ProjectsSection() {
       title: "DWP Viewer",
       description: [
         "A closed-access internal customer contact management system for Mathnasium franchises. Uses a variety of tools to enable a collaborative, data-fueled email composer for customer outreach.",
-        "Designed and organized entirely by me. Development was done with the help of Cursor and friends =)",
+        "Initially designed and organized by me, now developing in collaboration with a team of 3",
         "Writeups coming soon...",
       ],
       tags: [

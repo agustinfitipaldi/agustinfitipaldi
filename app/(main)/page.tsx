@@ -119,6 +119,23 @@ export default async function Page() {
 
       {/* Projects Section */}
       <ProjectsSection />
+
+      {/* Economics Projects Section */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Interactive Economics</h2>
+        <div className="grid gap-4">
+          <Link
+            href="/edgeworth"
+            className="group p-4 border rounded-lg hover:bg-accent transition-colors"
+          >
+            <h3 className="text-xl font-semibold mb-2">Edgeworth Box</h3>
+            <p className="text-muted-foreground">
+              Interactive 2D Edgeworth box for exploring exchange economies and
+              Pareto efficiency.
+            </p>
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
