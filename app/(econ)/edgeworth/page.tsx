@@ -9,12 +9,15 @@ import { evaluate } from "mathjs";
 // Import KaTeX CSS
 import "katex/dist/katex.min.css";
 
-const MathInput = dynamic(() => import("@/components/math-input"), {
-  ssr: false,
-  loading: () => (
-    <div className="h-10 w-full bg-muted animate-pulse rounded-md" />
-  ),
-});
+const EnhancedMathInput = dynamic(
+  () => import("@/components/enhanced-math-input"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-10 w-full bg-muted animate-pulse rounded-md" />
+    ),
+  }
+);
 
 interface Agent {
   utilityFunction: string;
@@ -38,11 +41,11 @@ export default function EdgeworthBox() {
   const [state, setState] = useState<EdgeworthState>({
     agent1: {
       utilityFunction: "ln(x) + ln(y)",
-      endowment: { x: 10, y: 5 },
+      endowment: { x: 5, y: 10 },
     },
     agent2: {
       utilityFunction: "x * y",
-      endowment: { x: 5, y: 10 },
+      endowment: { x: 10, y: 5 },
     },
     boxDimensions: {
       width: 15,
@@ -68,13 +71,13 @@ export default function EdgeworthBox() {
     isAgent2: boolean = false
   ) => {
     try {
-      // For agent 2, transform coordinates to their perspective
+      // For agent 2, transform coordinates to their perspective (from top-right)
       if (isAgent2) {
         x = state.boxDimensions.width - x;
         y = state.boxDimensions.height - y;
       }
 
-      // Ensure x and y are positive
+      // Ensure values are positive
       if (x <= 0.001 || y <= 0.001) return 0;
 
       // Sanitize the utility function string
@@ -116,34 +119,85 @@ export default function EdgeworthBox() {
     const width = state.boxDimensions.width;
     const height = state.boxDimensions.height;
 
-    // For each x, solve for y directly using the utility function
+    // Sample x values across the width of the box, including very close to edges
     for (let i = 0; i <= steps; i++) {
-      const x = 0.1 + (i / steps) * (width - 0.2);
+      const x = 0.001 + (i / steps) * (width - 0.002);
 
       try {
-        // Try to solve for y algebraically based on common utility function forms
-        let y: number | null = null;
+        // For any utility function U(x,y), an indifference curve has U(x,y) = k
+        // Substitute x and solve for y
+        const expr = agent.utilityFunction
+          .replace(/ln/g, "log")
+          // Help mathjs parse common expressions
+          .replace(/(\d+)([xy])/g, "$1*$2") // Convert 2x to 2*x
+          .replace(/([xy])(\d+)/g, "$1^$2") // Convert x2 to x^2
+          .replace(/([xy])\^(\d+)\/(\d+)/g, "$1^($2/$3)") // Convert x^1/2 to x^(1/2)
+          // Add explicit exponents where missing
+          .replace(/([xy])(?![*+\-/^])/g, "$1^1") // Add ^1 to lone x or y
+          .replace(/\*([xy])(?![*+\-/^])/g, "*$1^1") // Add ^1 after multiplication
+          .trim();
 
-        if (agent.utilityFunction.includes("log(x) + log(y)")) {
-          // For U = log(x) + log(y), when U = k, y = e^(k - log(x))
-          y = Math.exp(utilityLevel - Math.log(x));
-        } else if (agent.utilityFunction.includes("x * y")) {
-          // For U = x * y, when U = k, y = k/x
-          y = utilityLevel / x;
-        } else {
-          // For other functions, try a simple approximation
-          // Find y where U(x,y) ≈ utilityLevel
-          const yTest = utilityLevel / evaluateUtility(agent, x, 1, isAgent2);
-          if (isFinite(yTest) && yTest > 0) {
-            y = yTest;
-          }
-        }
+        const y = evaluate(`solve(${expr} = ${utilityLevel}, y)`, { x });
 
-        if (y !== null && isFinite(y) && y > 0.1 && y < height - 0.1) {
-          points.push([x, y]);
+        // y might be an array of solutions, take the positive one in our range
+        const validY = Array.isArray(y)
+          ? y.find((val) => val >= 0.001 && val <= height - 0.001)
+          : y >= 0.001 && y <= height - 0.001
+          ? y
+          : null;
+
+        if (validY !== null && isFinite(validY)) {
+          // For agent 2, transform the point to their coordinate system (top-right origin)
+          const point: [number, number] = isAgent2
+            ? [width - x, height - validY]
+            : [x, validY];
+          points.push(point);
         }
       } catch {
-        continue;
+        // If we can't solve algebraically, try numerical approximation
+        try {
+          // Binary search for y value that gives target utility
+          let low = 0.001;
+          let high = height - 0.001;
+          const tolerance = 0.0001;
+          let iterations = 0;
+          const maxIterations = 40;
+
+          while (iterations < maxIterations && high - low > tolerance) {
+            const mid = (low + high) / 2;
+            const u = evaluateUtility(agent, x, mid, false);
+
+            if (Math.abs(u - utilityLevel) < tolerance) {
+              const point: [number, number] = isAgent2
+                ? [width - x, height - mid]
+                : [x, mid];
+              points.push(point);
+              break;
+            }
+
+            if (u < utilityLevel) {
+              low = mid;
+            } else {
+              high = mid;
+            }
+            iterations++;
+          }
+
+          // If we hit max iterations, use the midpoint if it's close enough
+          if (iterations === maxIterations) {
+            const mid = (low + high) / 2;
+            const u = evaluateUtility(agent, x, mid, false);
+            if (Math.abs(u - utilityLevel) < tolerance * 10) {
+              const point: [number, number] = isAgent2
+                ? [width - x, height - mid]
+                : [x, mid];
+              points.push(point);
+            }
+          }
+        } catch {
+          // Skip this point if both methods fail
+          continue;
+        }
       }
     }
 
@@ -268,21 +322,21 @@ export default function EdgeworthBox() {
     ctx.font = "14px var(--font-geist-sans)";
     ctx.fillStyle = "#666";
 
-    // Agent 1 labels
+    // Agent 1 labels (bottom-left origin)
     ctx.fillText(
-      "Good X",
+      "Good 2",
       toCanvasX(state.boxDimensions.width / 2),
       toCanvasY(-0.5)
     );
     ctx.save();
     ctx.translate(toCanvasX(-0.5), toCanvasY(state.boxDimensions.height / 2));
     ctx.rotate(-Math.PI / 2);
-    ctx.fillText("Good Y", 0, 0);
+    ctx.fillText("Good 1", 0, 0);
     ctx.restore();
 
-    // Agent 2 labels (inverted)
+    // Agent 2 labels (top-right origin, inverted)
     ctx.fillText(
-      "Good X",
+      "Good 2",
       toCanvasX(state.boxDimensions.width / 2),
       toCanvasY(state.boxDimensions.height + 0.5)
     );
@@ -292,7 +346,7 @@ export default function EdgeworthBox() {
       toCanvasY(state.boxDimensions.height / 2)
     );
     ctx.rotate(Math.PI / 2);
-    ctx.fillText("Good Y", 0, 0);
+    ctx.fillText("Good 1", 0, 0);
     ctx.restore();
 
     const drawIndifferenceCurve = (
@@ -311,7 +365,7 @@ export default function EdgeworthBox() {
       if (points.length > 1) {
         ctx.beginPath();
         ctx.strokeStyle = color;
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 2.5; // Make lines thicker
 
         // Draw simple line segments instead of curves
         ctx.moveTo(toCanvasX(points[0][0]), toCanvasY(points[0][1]));
@@ -411,7 +465,7 @@ export default function EdgeworthBox() {
               <h2 className="text-lg font-semibold">Agent 1</h2>
               <div className="space-y-1">
                 <Label className="text-sm">Utility Function</Label>
-                <MathInput
+                <EnhancedMathInput
                   value={state.agent1.utilityFunction}
                   onChange={(value) =>
                     setState((prev) => ({
@@ -423,7 +477,7 @@ export default function EdgeworthBox() {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label className="text-sm">X</Label>
+                  <Label className="text-sm">Good 1</Label>
                   <Input
                     type="number"
                     min="0.1"
@@ -436,7 +490,7 @@ export default function EdgeworthBox() {
                   />
                 </div>
                 <div>
-                  <Label className="text-sm">Y</Label>
+                  <Label className="text-sm">Good 2</Label>
                   <Input
                     type="number"
                     min="0.1"
@@ -456,7 +510,7 @@ export default function EdgeworthBox() {
               <h2 className="text-lg font-semibold">Agent 2</h2>
               <div className="space-y-1">
                 <Label className="text-sm">Utility Function</Label>
-                <MathInput
+                <EnhancedMathInput
                   value={state.agent2.utilityFunction}
                   onChange={(value) =>
                     setState((prev) => ({
@@ -468,7 +522,7 @@ export default function EdgeworthBox() {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label className="text-sm">X</Label>
+                  <Label className="text-sm">Good 1</Label>
                   <Input
                     type="number"
                     min="0.1"
@@ -481,7 +535,7 @@ export default function EdgeworthBox() {
                   />
                 </div>
                 <div>
-                  <Label className="text-sm">Y</Label>
+                  <Label className="text-sm">Good 2</Label>
                   <Input
                     type="number"
                     min="0.1"
