@@ -3,6 +3,13 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  MessageSquare,
+  Heart,
+  Repeat2,
+  Clock,
+  CalendarDays,
+} from "lucide-react";
 
 interface BlueskyPost {
   post: {
@@ -53,7 +60,8 @@ export default function BlueskyGallery() {
   const [posts, setPosts] = useState<BlueskyPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeFilter, setActiveFilter] = useState<PostType | null>(null);
+  const [activeFilters, setActiveFilters] = useState<Set<PostType>>(new Set());
+  const [isChronological, setIsChronological] = useState(false);
 
   useEffect(() => {
     async function fetchPosts() {
@@ -63,7 +71,6 @@ export default function BlueskyGallery() {
           throw new Error("Failed to fetch posts");
         }
         const data = await response.json();
-        console.log("Raw data from Bluesky API:", data);
         setPosts(data);
       } catch (err) {
         setError("Failed to fetch posts. Please try again later.");
@@ -78,12 +85,11 @@ export default function BlueskyGallery() {
 
   // Helper to check if a URI belongs to the current user
   const isMyUri = (uri: string) => {
-    // Get all URIs from my posts
     const myUris = new Set(posts.map((p) => p.post.uri));
     return myUris.has(uri);
   };
 
-  // Group posts by thread
+  // Group posts by thread and organize them hierarchically
   const threadMap = new Map<string, BlueskyPost[]>();
   posts.forEach((post) => {
     const rootUri = post.post.record.reply?.root.uri || post.post.uri;
@@ -93,33 +99,53 @@ export default function BlueskyGallery() {
     threadMap.get(rootUri)?.push(post);
   });
 
-  // Sort threads by most recent post
-  const sortedThreads = Array.from(threadMap.entries()).sort((a, b) => {
-    const aLatest = a[1][0].post.record.createdAt;
-    const bLatest = b[1][0].post.record.createdAt;
-    return bLatest.localeCompare(aLatest);
+  // Sort posts within each thread by parent-child relationship
+  const sortedThreads = Array.from(threadMap.entries()).map(
+    ([rootUri, threadPosts]) => {
+      // Sort posts so that parent posts come before their children
+      const sortedPosts = [...threadPosts].sort((a, b) => {
+        if (!a.post.record.reply) return -1;
+        if (!b.post.record.reply) return 1;
+        if (a.post.record.reply.parent.uri === b.post.uri) return 1;
+        if (b.post.record.reply.parent.uri === a.post.uri) return -1;
+        return isChronological
+          ? new Date(a.post.record.createdAt).getTime() -
+              new Date(b.post.record.createdAt).getTime()
+          : 0;
+      });
+      return [rootUri, sortedPosts] as [string, BlueskyPost[]];
+    }
+  );
+
+  // Sort threads by the timestamp of their root post or most recent post
+  sortedThreads.sort((a, b) => {
+    const aTime = isChronological
+      ? new Date(a[1][0].post.record.createdAt).getTime()
+      : Math.max(
+          ...a[1].map((p) => new Date(p.post.record.createdAt).getTime())
+        );
+    const bTime = isChronological
+      ? new Date(b[1][0].post.record.createdAt).getTime()
+      : Math.max(
+          ...b[1].map((p) => new Date(p.post.record.createdAt).getTime())
+        );
+    return bTime - aTime;
   });
 
   // Calculate post counts and filter threads
   const categorizePost = (post: BlueskyPost): PostType | null => {
-    // Check if it's a repost first
     if (post.post.repostCount > 0) {
       return "reposts";
     }
-
-    // If it's not a reply, or it's a reply to self, it's a post
     if (
       !post.post.record.reply ||
       (post.post.record.reply && isMyUri(post.post.record.reply.root.uri))
     ) {
       return "posts";
     }
-
-    // If it's a reply to someone else's post
     if (post.post.record.reply && !isMyUri(post.post.record.reply.root.uri)) {
       return "replies";
     }
-
     return null;
   };
 
@@ -129,12 +155,14 @@ export default function BlueskyGallery() {
     reposts: posts.filter((p) => categorizePost(p) === "reposts").length,
   };
 
-  // Filter posts based on active filter
-  const filteredThreads = sortedThreads.filter(([, threadPosts]) => {
-    if (!activeFilter) return true;
-    const firstPost = threadPosts[0];
-    return categorizePost(firstPost) === activeFilter;
-  });
+  // Filter posts based on active filters (OR logic)
+  const filteredThreads =
+    activeFilters.size > 0
+      ? sortedThreads.filter(([, threadPosts]) => {
+          const category = categorizePost(threadPosts[0]);
+          return category && activeFilters.has(category);
+        })
+      : sortedThreads;
 
   if (loading) {
     return <div className="text-center py-8">Loading posts...</div>;
@@ -144,25 +172,54 @@ export default function BlueskyGallery() {
     return <div className="text-center py-8 text-red-500">{error}</div>;
   }
 
+  const toggleFilter = (type: PostType) => {
+    const newFilters = new Set(activeFilters);
+    if (newFilters.has(type)) {
+      newFilters.delete(type);
+    } else {
+      newFilters.add(type);
+    }
+    setActiveFilters(newFilters);
+  };
+
   return (
     <div>
-      <div className="flex items-center gap-4 mb-4">
-        <h2 className="text-2xl font-semibold">Posts</h2>
-        <div className="h-6 w-px bg-primary" />
-        <span className="text-xl font-semibold">{filteredThreads.length}</span>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <h2 className="text-2xl font-semibold">Posts</h2>
+          <div className="h-6 w-px bg-primary" />
+          <span className="text-xl font-semibold">
+            {filteredThreads.length}
+          </span>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsChronological(!isChronological)}
+          className="flex items-center gap-2"
+        >
+          {isChronological ? (
+            <Clock className="h-4 w-4" />
+          ) : (
+            <CalendarDays className="h-4 w-4" />
+          )}
+          {isChronological ? "Chronological" : "Latest Activity"}
+        </Button>
       </div>
 
       <div className="flex gap-2 flex-wrap mb-6">
         {(["posts", "replies", "reposts"] as PostType[]).map((type) => (
           <Button
             key={type}
-            variant={activeFilter === type ? "default" : "secondary"}
+            variant={activeFilters.has(type) ? "default" : "secondary"}
             size="sm"
-            onClick={() => setActiveFilter(activeFilter === type ? null : type)}
+            onClick={() => toggleFilter(type)}
             className="text-xs"
           >
             {type.charAt(0).toUpperCase() + type.slice(1)}{" "}
-            <span className="text-muted-foreground">{postCounts[type]}</span>
+            <span className="text-muted-foreground ml-1">
+              {postCounts[type]}
+            </span>
           </Button>
         ))}
       </div>
@@ -175,7 +232,9 @@ export default function BlueskyGallery() {
                 {threadPosts.map(({ post }, index) => (
                   <div
                     key={post.uri}
-                    className={index > 0 ? "pl-4 border-l-2 border-border" : ""}
+                    className={
+                      index > 0 ? "pl-4 ml-4 border-l-2 border-border" : ""
+                    }
                   >
                     <div className="flex items-center mb-4">
                       {post.author.avatar && (
@@ -214,10 +273,17 @@ export default function BlueskyGallery() {
                       <span>
                         {new Date(post.record.createdAt).toLocaleDateString()}
                       </span>
-                      <div className="flex space-x-4">
-                        <span>❤️ {post.likeCount}</span>
-                        <span>🔄 {post.repostCount}</span>
-                        <span>💬 {post.replyCount}</span>
+                      <div className="flex items-center space-x-4">
+                        <span className="flex items-center gap-1">
+                          <Heart className="h-4 w-4" /> {post.likeCount}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Repeat2 className="h-4 w-4" /> {post.repostCount}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MessageSquare className="h-4 w-4" />{" "}
+                          {post.replyCount}
+                        </span>
                       </div>
                     </div>
                   </div>
