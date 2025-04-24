@@ -89,50 +89,7 @@ export default function BlueskyGallery() {
     return myUris.has(uri);
   };
 
-  // Group posts by thread and organize them hierarchically
-  const threadMap = new Map<string, BlueskyPost[]>();
-  posts.forEach((post) => {
-    const rootUri = post.post.record.reply?.root.uri || post.post.uri;
-    if (!threadMap.has(rootUri)) {
-      threadMap.set(rootUri, []);
-    }
-    threadMap.get(rootUri)?.push(post);
-  });
-
-  // Sort posts within each thread by parent-child relationship
-  const sortedThreads = Array.from(threadMap.entries()).map(
-    ([rootUri, threadPosts]) => {
-      // Sort posts so that parent posts come before their children
-      const sortedPosts = [...threadPosts].sort((a, b) => {
-        if (!a.post.record.reply) return -1;
-        if (!b.post.record.reply) return 1;
-        if (a.post.record.reply.parent.uri === b.post.uri) return 1;
-        if (b.post.record.reply.parent.uri === a.post.uri) return -1;
-        return isChronological
-          ? new Date(a.post.record.createdAt).getTime() -
-              new Date(b.post.record.createdAt).getTime()
-          : 0;
-      });
-      return [rootUri, sortedPosts] as [string, BlueskyPost[]];
-    }
-  );
-
-  // Sort threads by the timestamp of their root post or most recent post
-  sortedThreads.sort((a, b) => {
-    const aTime = isChronological
-      ? new Date(a[1][0].post.record.createdAt).getTime()
-      : Math.max(
-          ...a[1].map((p) => new Date(p.post.record.createdAt).getTime())
-        );
-    const bTime = isChronological
-      ? new Date(b[1][0].post.record.createdAt).getTime()
-      : Math.max(
-          ...b[1].map((p) => new Date(p.post.record.createdAt).getTime())
-        );
-    return bTime - aTime;
-  });
-
-  // Calculate post counts and filter threads
+  // Calculate post counts and categorize posts
   const categorizePost = (post: BlueskyPost): PostType | null => {
     if (post.post.repostCount > 0) {
       return "reposts";
@@ -155,14 +112,67 @@ export default function BlueskyGallery() {
     reposts: posts.filter((p) => categorizePost(p) === "reposts").length,
   };
 
+  // Group posts by thread
+  const threadMap = new Map<string, BlueskyPost[]>();
+  posts.forEach((post) => {
+    const rootUri = post.post.record.reply?.root.uri || post.post.uri;
+    if (!threadMap.has(rootUri)) {
+      threadMap.set(rootUri, []);
+    }
+    threadMap.get(rootUri)?.push(post);
+  });
+
+  // Create the thread structure
+  const sortedThreads = Array.from(threadMap.entries()).map(
+    ([rootUri, threadPosts]) => {
+      return [rootUri, threadPosts] as [string, BlueskyPost[]];
+    }
+  );
+
   // Filter posts based on active filters (OR logic)
-  const filteredThreads =
+  let filteredThreads =
     activeFilters.size > 0
       ? sortedThreads.filter(([, threadPosts]) => {
           const category = categorizePost(threadPosts[0]);
           return category && activeFilters.has(category);
         })
       : sortedThreads;
+
+  // Sort all threads by timestamp
+  filteredThreads = [...filteredThreads].sort((a, b) => {
+    if (isChronological) {
+      // Sort by original post date
+      const aTime = new Date(a[1][0].post.record.createdAt).getTime();
+      const bTime = new Date(b[1][0].post.record.createdAt).getTime();
+      return aTime - bTime; // Ascending order for chronological
+    } else {
+      // Sort by latest activity
+      const aTime = Math.max(
+        ...a[1].map((p) => new Date(p.post.record.createdAt).getTime())
+      );
+      const bTime = Math.max(
+        ...b[1].map((p) => new Date(p.post.record.createdAt).getTime())
+      );
+      return bTime - aTime; // Descending order for latest activity
+    }
+  });
+
+  // Sort posts within each thread
+  filteredThreads = filteredThreads.map(([rootUri, threadPosts]) => {
+    const sortedPosts = [...threadPosts].sort((a, b) => {
+      // Always keep parent posts before children
+      if (!a.post.record.reply) return -1;
+      if (!b.post.record.reply) return 1;
+      if (a.post.record.reply.parent.uri === b.post.uri) return 1;
+      if (b.post.record.reply.parent.uri === a.post.uri) return -1;
+
+      // Then sort by date according to the chronological setting
+      const aTime = new Date(a.post.record.createdAt).getTime();
+      const bTime = new Date(b.post.record.createdAt).getTime();
+      return isChronological ? aTime - bTime : bTime - aTime;
+    });
+    return [rootUri, sortedPosts] as [string, BlueskyPost[]];
+  });
 
   if (loading) {
     return <div className="text-center py-8">Loading posts...</div>;
@@ -193,7 +203,7 @@ export default function BlueskyGallery() {
           </span>
         </div>
         <Button
-          variant="ghost"
+          variant={isChronological ? "default" : "secondary"}
           size="sm"
           onClick={() => setIsChronological(!isChronological)}
           className="flex items-center gap-2"
@@ -203,7 +213,7 @@ export default function BlueskyGallery() {
           ) : (
             <CalendarDays className="h-4 w-4" />
           )}
-          {isChronological ? "Chronological" : "Latest Activity"}
+          {isChronological ? "Chronological" : "Latest"}
         </Button>
       </div>
 
