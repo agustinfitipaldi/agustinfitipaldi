@@ -69,7 +69,7 @@ export default async function RootLayout({
           <div className="flex flex-col min-h-screen overflow-clip">
             <SiteNav posts={posts} />
             <ScrollArea type="hover" className="flex-1 lg:ml-[250px]">
-              <main className="pt-24 lg:pt-0">{children}</main>
+              <main className="lg:pt-0">{children}</main>
             </ScrollArea>
           </div>
         </ThemeProvider>
