@@ -14,7 +14,10 @@ type NavItem = {
   href: string;
 };
 
-const mainNav: NavItem[] = [{ title: "Home", href: "/" }];
+const mainNav: NavItem[] = [
+  { title: "Home", href: "/" },
+  { title: "Bluesky", href: "/bluesky" },
+];
 
 function NavLink({
   href,
@@ -99,7 +102,10 @@ export function SiteNav({ posts }: { posts: writingPost[] }) {
                       <NavLink
                         key={item.href}
                         href={item.href}
-                        className="text-4xl"
+                        className={cn(
+                          "text-4xl",
+                          item.title === "Bluesky" && "text-2xl pt-2"
+                        )}
                       >
                         {item.title}
                       </NavLink>
@@ -138,7 +144,14 @@ export function SiteNav({ posts }: { posts: writingPost[] }) {
             <ModeToggle />
           </div>
           {mainNav.map((item) => (
-            <NavLink key={item.href} href={item.href} className="text-4xl">
+            <NavLink
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "text-4xl",
+                item.title === "Bluesky" && "text-2xl pt-2"
+              )}
+            >
               {item.title}
             </NavLink>
           ))}

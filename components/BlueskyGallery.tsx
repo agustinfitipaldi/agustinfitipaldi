@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -10,6 +10,7 @@ import {
   Clock,
   CalendarDays,
 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface BlueskyPost {
   post: {
@@ -56,12 +57,82 @@ interface BlueskyPost {
 
 type PostType = "posts" | "replies" | "reposts";
 
-export default function BlueskyGallery() {
+interface BlueskyGalleryProps {
+  onContentHeightChange?: (height: number) => void;
+}
+
+function LoadingSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-8 w-24" />
+          <div className="h-6 w-px bg-border" />
+          <Skeleton className="h-8 w-8" />
+        </div>
+        <Skeleton className="h-9 w-28" />
+      </div>
+
+      <div className="flex gap-2 flex-wrap mb-6">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-9 w-24" />
+        ))}
+      </div>
+
+      <div className="flex flex-col gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Card key={i} className="transition-colors hover:bg-muted/50">
+            <CardContent className="p-6">
+              <div className="flex items-center mb-4">
+                <Skeleton className="h-10 w-10 rounded-full mr-3" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              </div>
+              <div className="space-y-2 mb-4">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-4/5" />
+              </div>
+              <div className="flex justify-between items-center">
+                <Skeleton className="h-4 w-24" />
+                <div className="flex space-x-4">
+                  <Skeleton className="h-4 w-12" />
+                  <Skeleton className="h-4 w-12" />
+                  <Skeleton className="h-4 w-12" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function BlueskyGallery({
+  onContentHeightChange,
+}: BlueskyGalleryProps) {
   const [posts, setPosts] = useState<BlueskyPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeFilters, setActiveFilters] = useState<Set<PostType>>(new Set());
   const [isChronological, setIsChronological] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Update parent about content height changes
+  useEffect(() => {
+    if (contentRef.current && onContentHeightChange) {
+      const observer = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          onContentHeightChange(entry.contentRect.height);
+        }
+      });
+
+      observer.observe(contentRef.current);
+      return () => observer.disconnect();
+    }
+  }, [onContentHeightChange]);
 
   useEffect(() => {
     async function fetchPosts() {
@@ -175,7 +246,7 @@ export default function BlueskyGallery() {
   });
 
   if (loading) {
-    return <div className="text-center py-8">Loading posts...</div>;
+    return <LoadingSkeleton />;
   }
 
   if (error) {
@@ -193,7 +264,7 @@ export default function BlueskyGallery() {
   };
 
   return (
-    <div>
+    <div ref={contentRef}>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <h2 className="text-2xl font-semibold">Posts</h2>
