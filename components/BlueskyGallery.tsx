@@ -76,6 +76,13 @@ export default function BlueskyGallery() {
     fetchPosts();
   }, []);
 
+  // Helper to check if a URI belongs to the current user
+  const isMyUri = (uri: string) => {
+    // Get all URIs from my posts
+    const myUris = new Set(posts.map((p) => p.post.uri));
+    return myUris.has(uri);
+  };
+
   // Group posts by thread
   const threadMap = new Map<string, BlueskyPost[]>();
   posts.forEach((post) => {
@@ -86,35 +93,6 @@ export default function BlueskyGallery() {
     threadMap.get(rootUri)?.push(post);
   });
 
-  console.log(
-    "All posts:",
-    posts.map((p) => ({
-      uri: p.post.uri,
-      text: p.post.record.text.slice(0, 50) + "...",
-      isReply: !!p.post.record.reply,
-      replyTo: p.post.record.reply
-        ? {
-            root: p.post.record.reply.root.uri,
-            parent: p.post.record.reply.parent.uri,
-          }
-        : null,
-      repostCount: p.post.repostCount,
-    }))
-  );
-
-  console.log(
-    "Thread map:",
-    Array.from(threadMap.entries()).map(([rootUri, posts]) => ({
-      rootUri,
-      postCount: posts.length,
-      firstPost: {
-        text: posts[0].post.record.text.slice(0, 50) + "...",
-        isReply: !!posts[0].post.record.reply,
-        repostCount: posts[0].post.repostCount,
-      },
-    }))
-  );
-
   // Sort threads by most recent post
   const sortedThreads = Array.from(threadMap.entries()).sort((a, b) => {
     const aLatest = a[1][0].post.record.createdAt;
@@ -122,64 +100,40 @@ export default function BlueskyGallery() {
     return bLatest.localeCompare(aLatest);
   });
 
-  // Helper function to determine post type
-  const getPostType = (post: BlueskyPost): PostType | null => {
-    if (
-      post.post.record.reply?.parent.uri !== post.post.record.reply?.root.uri
-    ) {
-      return "replies";
-    }
+  // Calculate post counts and filter threads
+  const categorizePost = (post: BlueskyPost): PostType | null => {
+    // Check if it's a repost first
     if (post.post.repostCount > 0) {
       return "reposts";
     }
-    if (!post.post.record.reply) {
+
+    // If it's not a reply, or it's a reply to self, it's a post
+    if (
+      !post.post.record.reply ||
+      (post.post.record.reply && isMyUri(post.post.record.reply.root.uri))
+    ) {
       return "posts";
     }
+
+    // If it's a reply to someone else's post
+    if (post.post.record.reply && !isMyUri(post.post.record.reply.root.uri)) {
+      return "replies";
+    }
+
     return null;
   };
 
-  // Calculate post counts based on the first post in each thread
   const postCounts = {
-    posts: sortedThreads.filter(
-      ([, threadPosts]) => !threadPosts[0].post.record.reply
-    ).length,
-    replies: sortedThreads.filter(
-      ([, threadPosts]) =>
-        threadPosts[0].post.record.reply?.parent.uri !==
-        threadPosts[0].post.record.reply?.root.uri
-    ).length,
-    reposts: sortedThreads.filter(
-      ([, threadPosts]) => threadPosts[0].post.repostCount > 0
-    ).length,
+    posts: posts.filter((p) => categorizePost(p) === "posts").length,
+    replies: posts.filter((p) => categorizePost(p) === "replies").length,
+    reposts: posts.filter((p) => categorizePost(p) === "reposts").length,
   };
-
-  console.log("Post counts:", postCounts);
-  console.log("Filtered counts:", {
-    posts: posts.filter((p) => !p.post.record.reply).length,
-    replies: posts.filter(
-      (p) => p.post.record.reply?.parent.uri !== p.post.record.reply?.root.uri
-    ).length,
-    reposts: posts.filter((p) => p.post.repostCount > 0).length,
-  });
 
   // Filter posts based on active filter
   const filteredThreads = sortedThreads.filter(([, threadPosts]) => {
     if (!activeFilter) return true;
     const firstPost = threadPosts[0];
-
-    switch (activeFilter) {
-      case "posts":
-        return !firstPost.post.record.reply;
-      case "replies":
-        return (
-          firstPost.post.record.reply?.parent.uri !==
-          firstPost.post.record.reply?.root.uri
-        );
-      case "reposts":
-        return firstPost.post.repostCount > 0;
-      default:
-        return true;
-    }
+    return categorizePost(firstPost) === activeFilter;
   });
 
   if (loading) {
