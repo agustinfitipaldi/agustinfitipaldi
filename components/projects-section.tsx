@@ -72,7 +72,7 @@ export function ProjectsSection() {
       description: [
         "Setup server on digital ocean droplet with the help of cursor to host a ManicTime server instance and track computer usage across several devices.",
       ],
-      tags: ["server", "shell", "sysadmin", "ssh"],
+      tags: ["AI", "server", "shell", "sysadmin", "ssh"],
     },
     {
       title: "ettle",
