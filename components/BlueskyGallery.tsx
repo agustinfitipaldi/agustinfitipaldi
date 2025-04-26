@@ -177,12 +177,6 @@ export default function BlueskyGallery({
     return null;
   };
 
-  const postCounts = {
-    posts: posts.filter((p) => categorizePost(p) === "posts").length,
-    replies: posts.filter((p) => categorizePost(p) === "replies").length,
-    reposts: posts.filter((p) => categorizePost(p) === "reposts").length,
-  };
-
   // Group posts by thread
   const threadMap = new Map<string, BlueskyPost[]>();
   posts.forEach((post) => {
@@ -245,6 +239,19 @@ export default function BlueskyGallery({
     return [rootUri, sortedPosts] as [string, BlueskyPost[]];
   });
 
+  // Calculate post counts based on all posts (not filtered)
+  const postCounts = {
+    posts: sortedThreads.filter(
+      ([, threadPosts]) => categorizePost(threadPosts[0]) === "posts"
+    ).length,
+    replies: sortedThreads.filter(
+      ([, threadPosts]) => categorizePost(threadPosts[0]) === "replies"
+    ).length,
+    reposts: sortedThreads.filter(
+      ([, threadPosts]) => categorizePost(threadPosts[0]) === "reposts"
+    ).length,
+  };
+
   if (loading) {
     return <LoadingSkeleton />;
   }
@@ -265,13 +272,22 @@ export default function BlueskyGallery({
 
   return (
     <div ref={contentRef}>
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <h2 className="text-2xl font-semibold">Posts</h2>
-          <div className="h-6 w-px bg-primary" />
-          <span className="text-xl font-semibold">
-            {filteredThreads.length}
-          </span>
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex gap-2 flex-wrap">
+          {(["posts", "replies", "reposts"] as PostType[]).map((type) => (
+            <Button
+              key={type}
+              variant={activeFilters.has(type) ? "default" : "secondary"}
+              size="sm"
+              onClick={() => toggleFilter(type)}
+              className="text-xs"
+            >
+              {type.charAt(0).toUpperCase() + type.slice(1)}{" "}
+              <span className="text-muted-foreground ml-1">
+                {postCounts[type]}
+              </span>
+            </Button>
+          ))}
         </div>
         <Button
           variant={isChronological ? "default" : "secondary"}
@@ -286,23 +302,6 @@ export default function BlueskyGallery({
           )}
           {isChronological ? "Chronological" : "Latest"}
         </Button>
-      </div>
-
-      <div className="flex gap-2 flex-wrap mb-6">
-        {(["posts", "replies", "reposts"] as PostType[]).map((type) => (
-          <Button
-            key={type}
-            variant={activeFilters.has(type) ? "default" : "secondary"}
-            size="sm"
-            onClick={() => toggleFilter(type)}
-            className="text-xs"
-          >
-            {type.charAt(0).toUpperCase() + type.slice(1)}{" "}
-            <span className="text-muted-foreground ml-1">
-              {postCounts[type]}
-            </span>
-          </Button>
-        ))}
       </div>
 
       <div className="flex flex-col gap-4">
