@@ -85,6 +85,10 @@ type PostType = "posts" | "replies" | "reposts";
 
 interface BlueskyGalleryProps {
   onContentHeightChange?: (height: number) => void;
+  dateRange?: {
+    startDate: Date;
+    endDate: Date;
+  };
 }
 
 function LoadingSkeleton() {
@@ -138,6 +142,7 @@ function LoadingSkeleton() {
 
 export default function BlueskyGallery({
   onContentHeightChange,
+  dateRange,
 }: BlueskyGalleryProps) {
   const [posts, setPosts] = useState<BlueskyPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -246,14 +251,23 @@ export default function BlueskyGallery({
     }
   );
 
+  // Filter posts based on date range
+  let dateFilteredThreads = sortedThreads;
+  if (dateRange) {
+    dateFilteredThreads = dateFilteredThreads.filter(([, threadPosts]) => {
+      const postDate = new Date(threadPosts[0].post.record.createdAt);
+      return postDate >= dateRange.startDate && postDate <= dateRange.endDate;
+    });
+  }
+
   // Filter posts based on active filters (OR logic)
   let filteredThreads =
     activeFilters.size > 0
-      ? sortedThreads.filter(([, threadPosts]) => {
+      ? dateFilteredThreads.filter(([, threadPosts]) => {
           const category = categorizePost(threadPosts[0]);
           return category && activeFilters.has(category);
         })
-      : sortedThreads;
+      : dateFilteredThreads;
 
   // Sort all threads by timestamp
   filteredThreads = [...filteredThreads].sort((a, b) => {
@@ -293,13 +307,13 @@ export default function BlueskyGallery({
 
   // Calculate post counts based on all posts (not filtered)
   const postCounts = {
-    posts: sortedThreads.filter(
+    posts: dateFilteredThreads.filter(
       ([, threadPosts]) => categorizePost(threadPosts[0]) === "posts"
     ).length,
-    replies: sortedThreads.filter(
+    replies: dateFilteredThreads.filter(
       ([, threadPosts]) => categorizePost(threadPosts[0]) === "replies"
     ).length,
-    reposts: sortedThreads.filter(
+    reposts: dateFilteredThreads.filter(
       ([, threadPosts]) => categorizePost(threadPosts[0]) === "reposts"
     ).length,
   };
@@ -368,6 +382,7 @@ export default function BlueskyGallery({
                 {threadPosts.map(({ post }, index) => (
                   <div
                     key={post.uri}
+                    data-uri={post.uri}
                     className={
                       index > 0 ? "pl-4 ml-4 border-l-2 border-border" : ""
                     }
@@ -407,73 +422,72 @@ export default function BlueskyGallery({
                       </div>
                     )}
 
-                    {post.record.embed?.record &&
-                      post.record.embed.record.value && (
-                        <div className="border rounded-lg p-4 mb-4 bg-muted/50">
-                          <div className="flex items-center mb-2">
-                            {post.record.embed.record.author?.avatar && (
-                              <img
-                                src={post.record.embed.record.author.avatar}
-                                alt={
-                                  post.record.embed.record.author.displayName ||
-                                  "Quoted post author"
-                                }
-                                className="w-6 h-6 rounded-full mr-2"
-                              />
-                            )}
-                            <div>
-                              <p className="text-sm font-medium">
-                                {post.record.embed.record.author?.displayName ||
-                                  "Unknown author"}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                @
-                                {post.record.embed.record.author?.handle ||
-                                  "unknown"}
-                              </p>
-                            </div>
-                          </div>
-                          {post.record.embed.record.value.text && (
-                            <p className="text-sm mb-2">
-                              {post.record.embed.record.value.text}
+                    {post.record.embed?.record?.value && (
+                      <div className="border rounded-lg p-4 mb-4 bg-muted/50">
+                        <div className="flex items-center mb-2">
+                          {post.record.embed?.record?.author?.avatar && (
+                            <img
+                              src={post.record.embed.record.author.avatar}
+                              alt={
+                                post.record.embed.record.author.displayName ||
+                                "Quoted post author"
+                              }
+                              className="w-6 h-6 rounded-full mr-2"
+                            />
+                          )}
+                          <div>
+                            <p className="text-sm font-medium">
+                              {post.record.embed?.record?.author?.displayName ||
+                                "Unknown author"}
                             </p>
-                          )}
-                          {post.record.embed.record.value.embed?.images &&
-                            post.record.embed.record.value.embed.images.length >
-                              0 && (
-                              <div className="grid grid-cols-2 gap-2">
-                                {post.record.embed.record.value.embed.images.map(
-                                  (image, index) => (
-                                    <img
-                                      key={index}
-                                      src={`https://bsky.social/xrpc/com.atproto.sync.getBlob?did=${
-                                        post.record.embed.record.author?.did ||
-                                        ""
-                                      }&cid=${image.image.ref.$link}`}
-                                      alt={image.alt || "Quoted post image"}
-                                      className="rounded-lg"
-                                    />
-                                  )
-                                )}
-                              </div>
-                            )}
-                          {post.record.embed.record.author?.handle && (
-                            <a
-                              href={`https://bsky.app/profile/${
-                                post.record.embed.record.author.handle
-                              }/post/${post.record.embed.record.uri
-                                .split("/")
-                                .pop()}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-muted-foreground hover:text-foreground transition-colors mt-2 block"
-                              title="View original post"
-                            >
-                              View original post
-                            </a>
-                          )}
+                            <p className="text-xs text-muted-foreground">
+                              @
+                              {post.record.embed?.record?.author?.handle ||
+                                "unknown"}
+                            </p>
+                          </div>
                         </div>
-                      )}
+                        {post.record.embed?.record?.value.text && (
+                          <p className="text-sm mb-2">
+                            {post.record.embed.record.value.text}
+                          </p>
+                        )}
+                        {post.record.embed?.record?.value.embed?.images &&
+                          post.record.embed.record.value.embed.images.length >
+                            0 && (
+                            <div className="grid grid-cols-2 gap-2">
+                              {post.record.embed.record.value.embed.images.map(
+                                (image, index) => (
+                                  <img
+                                    key={index}
+                                    src={`https://bsky.social/xrpc/com.atproto.sync.getBlob?did=${
+                                      post.record.embed?.record?.author?.did ||
+                                      ""
+                                    }&cid=${image.image.ref.$link}`}
+                                    alt={image.alt || "Quoted post image"}
+                                    className="rounded-lg"
+                                  />
+                                )
+                              )}
+                            </div>
+                          )}
+                        {post.record.embed?.record?.author?.handle && (
+                          <a
+                            href={`https://bsky.app/profile/${
+                              post.record.embed.record.author.handle
+                            }/post/${post.record.embed.record.uri
+                              .split("/")
+                              .pop()}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-muted-foreground hover:text-foreground transition-colors mt-2 block"
+                            title="View original post"
+                          >
+                            View original post
+                          </a>
+                        )}
+                      </div>
+                    )}
 
                     <div className="flex justify-between text-sm text-gray-500">
                       <span>{formattedDates[post.uri] || "Loading..."}</span>
