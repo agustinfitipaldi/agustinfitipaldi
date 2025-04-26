@@ -13,7 +13,7 @@ export default function BlueskyFilters({ postCounts }: BlueskyFiltersProps) {
     useBluesky();
 
   return (
-    <div className="flex justify-between items-center mb-6">
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
       <div className="flex gap-2 flex-wrap">
         {(["posts", "replies", "reposts"] as PostType[]).map((type) => (
           <Button
@@ -34,7 +34,7 @@ export default function BlueskyFilters({ postCounts }: BlueskyFiltersProps) {
         variant={isChronological ? "default" : "secondary"}
         size="sm"
         onClick={toggleChronological}
-        className="flex items-center gap-2"
+        className="flex items-center gap-2 w-full sm:w-auto justify-center"
       >
         {isChronological ? (
           <Clock className="h-4 w-4" />

@@ -85,7 +85,9 @@ export default function BlueskyPage() {
           <h1 className="text-4xl font-bold mb-8">Bluesky</h1>
           <BlueskyGallery onContentHeightChange={setContentHeight} />
         </div>
-        {posts.length > 0 && <BlueskyTimeline posts={posts} />}
+        {posts.length > 0 && windowWidth >= 640 && (
+          <BlueskyTimeline posts={posts} />
+        )}
       </div>
     </BlueskyProvider>
   );
