@@ -97,12 +97,14 @@ export default function BlueskyTimeline({ posts }: BlueskyTimelineProps) {
     return "posts";
   };
 
-  const handleMouseDown = (type: "start" | "end") => {
+  const handleMouseDown = (type: "start" | "end", e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent text selection
     setIsDragging(type);
   };
 
   const handleMouseMove = (e: MouseEvent) => {
     if (!isDragging || !timelineRef.current) return;
+    e.preventDefault(); // Prevent text selection
 
     const timelineRect = timelineRef.current.getBoundingClientRect();
     const position =
@@ -233,12 +235,15 @@ export default function BlueskyTimeline({ posts }: BlueskyTimelineProps) {
           </div>
         </div>
 
-        <div ref={timelineRef} className="relative w-px bg-foreground h-full">
+        <div
+          ref={timelineRef}
+          className="relative w-px bg-foreground h-full select-none"
+        >
           {/* Start selector */}
           <div
-            className="absolute left-1/2 -translate-x-1/2 cursor-pointer group z-30"
+            className="absolute left-1/2 -translate-x-1/2 cursor-pointer group z-30 select-none"
             style={{ top: `${startPosition}%` }}
-            onMouseDown={() => handleMouseDown("start")}
+            onMouseDown={(e) => handleMouseDown("start", e)}
           >
             <div className="w-8 h-3 bg-primary rounded-full flex items-center justify-center">
               <div className="w-4 h-0.5 bg-background/50 rounded-full" />
@@ -247,9 +252,9 @@ export default function BlueskyTimeline({ posts }: BlueskyTimelineProps) {
 
           {/* End selector */}
           <div
-            className="absolute left-1/2 -translate-x-1/2 cursor-pointer group z-30"
+            className="absolute left-1/2 -translate-x-1/2 cursor-pointer group z-30 select-none"
             style={{ top: `${endPosition}%` }}
-            onMouseDown={() => handleMouseDown("end")}
+            onMouseDown={(e) => handleMouseDown("end", e)}
           >
             <div className="w-8 h-3 bg-primary rounded-full flex items-center justify-center">
               <div className="w-4 h-0.5 bg-background/50 rounded-full" />
