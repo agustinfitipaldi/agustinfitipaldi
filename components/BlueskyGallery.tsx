@@ -36,6 +36,32 @@ interface BlueskyPost {
             size: number;
           };
         }>;
+        record?: {
+          uri: string;
+          cid: string;
+          author: {
+            did: string;
+            handle: string;
+            displayName: string;
+            avatar?: string;
+          };
+          value: {
+            text: string;
+            createdAt: string;
+            embed?: {
+              images?: Array<{
+                alt: string;
+                image: {
+                  ref: {
+                    $link: string;
+                  };
+                  mimeType: string;
+                  size: number;
+                };
+              }>;
+            };
+          };
+        };
       };
       reply?: {
         root: {
@@ -118,7 +144,33 @@ export default function BlueskyGallery({
   const [error, setError] = useState<string | null>(null);
   const [activeFilters, setActiveFilters] = useState<Set<PostType>>(new Set());
   const [isChronological, setIsChronological] = useState(false);
+  const [formattedDates, setFormattedDates] = useState<Record<string, string>>(
+    {}
+  );
+  const [isClient, setIsClient] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Format dates consistently
+  useEffect(() => {
+    if (!isClient) return;
+
+    const dates: Record<string, string> = {};
+    posts.forEach(({ post }) => {
+      dates[post.uri] = new Date(post.record.createdAt).toLocaleDateString(
+        "en-US",
+        {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        }
+      );
+    });
+    setFormattedDates(dates);
+  }, [posts, isClient]);
 
   // Update parent about content height changes
   useEffect(() => {
@@ -252,6 +304,10 @@ export default function BlueskyGallery({
     ).length,
   };
 
+  if (!isClient) {
+    return <LoadingSkeleton />;
+  }
+
   if (loading) {
     return <LoadingSkeleton />;
   }
@@ -316,21 +372,23 @@ export default function BlueskyGallery({
                       index > 0 ? "pl-4 ml-4 border-l-2 border-border" : ""
                     }
                   >
-                    <div className="flex items-center mb-4">
-                      {post.author.avatar && (
-                        <img
-                          src={post.author.avatar}
-                          alt={post.author.displayName}
-                          className="w-10 h-10 rounded-full mr-3"
-                        />
-                      )}
-                      <div>
-                        <h3 className="font-semibold">
-                          {post.author.displayName}
-                        </h3>
-                        <p className="text-sm text-gray-500">
-                          @{post.author.handle}
-                        </p>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center">
+                        {post.author.avatar && (
+                          <img
+                            src={post.author.avatar}
+                            alt={post.author.displayName}
+                            className="w-10 h-10 rounded-full mr-3"
+                          />
+                        )}
+                        <div>
+                          <h3 className="font-semibold">
+                            {post.author.displayName}
+                          </h3>
+                          <p className="text-sm text-gray-500">
+                            @{post.author.handle}
+                          </p>
+                        </div>
                       </div>
                     </div>
 
@@ -349,11 +407,85 @@ export default function BlueskyGallery({
                       </div>
                     )}
 
+                    {post.record.embed?.record &&
+                      post.record.embed.record.value && (
+                        <div className="border rounded-lg p-4 mb-4 bg-muted/50">
+                          <div className="flex items-center mb-2">
+                            {post.record.embed.record.author?.avatar && (
+                              <img
+                                src={post.record.embed.record.author.avatar}
+                                alt={
+                                  post.record.embed.record.author.displayName ||
+                                  "Quoted post author"
+                                }
+                                className="w-6 h-6 rounded-full mr-2"
+                              />
+                            )}
+                            <div>
+                              <p className="text-sm font-medium">
+                                {post.record.embed.record.author?.displayName ||
+                                  "Unknown author"}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                @
+                                {post.record.embed.record.author?.handle ||
+                                  "unknown"}
+                              </p>
+                            </div>
+                          </div>
+                          {post.record.embed.record.value.text && (
+                            <p className="text-sm mb-2">
+                              {post.record.embed.record.value.text}
+                            </p>
+                          )}
+                          {post.record.embed.record.value.embed?.images &&
+                            post.record.embed.record.value.embed.images.length >
+                              0 && (
+                              <div className="grid grid-cols-2 gap-2">
+                                {post.record.embed.record.value.embed.images.map(
+                                  (image, index) => (
+                                    <img
+                                      key={index}
+                                      src={`https://bsky.social/xrpc/com.atproto.sync.getBlob?did=${
+                                        post.record.embed.record.author?.did ||
+                                        ""
+                                      }&cid=${image.image.ref.$link}`}
+                                      alt={image.alt || "Quoted post image"}
+                                      className="rounded-lg"
+                                    />
+                                  )
+                                )}
+                              </div>
+                            )}
+                          {post.record.embed.record.author?.handle && (
+                            <a
+                              href={`https://bsky.app/profile/${
+                                post.record.embed.record.author.handle
+                              }/post/${post.record.embed.record.uri
+                                .split("/")
+                                .pop()}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-muted-foreground hover:text-foreground transition-colors mt-2 block"
+                              title="View original post"
+                            >
+                              View original post
+                            </a>
+                          )}
+                        </div>
+                      )}
+
                     <div className="flex justify-between text-sm text-gray-500">
-                      <span>
-                        {new Date(post.record.createdAt).toLocaleDateString()}
-                      </span>
-                      <div className="flex items-center space-x-4">
+                      <span>{formattedDates[post.uri] || "Loading..."}</span>
+                      <a
+                        href={`https://bsky.app/profile/${
+                          post.author.handle
+                        }/post/${post.uri.split("/").pop()}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-4 hover:text-foreground transition-colors"
+                        title="View on Bluesky"
+                      >
                         <span className="flex items-center gap-1">
                           <Heart className="h-4 w-4" /> {post.likeCount}
                         </span>
@@ -364,7 +496,7 @@ export default function BlueskyGallery({
                           <MessageSquare className="h-4 w-4" />{" "}
                           {post.replyCount}
                         </span>
-                      </div>
+                      </a>
                     </div>
                   </div>
                 ))}
