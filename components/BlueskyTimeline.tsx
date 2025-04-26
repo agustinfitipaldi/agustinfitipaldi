@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
+import { useBluesky } from "@/contexts/BlueskyContext";
 
 interface BlueskyTimelineProps {
   posts: Array<{
@@ -10,6 +11,11 @@ interface BlueskyTimelineProps {
       record: {
         createdAt: string;
         text: string;
+        reply?: {
+          root: {
+            uri: string;
+          };
+        };
         embed?: {
           images?: Array<{
             alt: string;
@@ -31,15 +37,9 @@ interface BlueskyTimelineProps {
       };
     };
   }>;
-  onDateRangeChange: (startDate: Date, endDate: Date) => void;
-  visiblePostUris?: Set<string>;
 }
 
-export default function BlueskyTimeline({
-  posts,
-  onDateRangeChange,
-  visiblePostUris,
-}: BlueskyTimelineProps) {
+export default function BlueskyTimeline({ posts }: BlueskyTimelineProps) {
   const [isClient, setIsClient] = useState(false);
   const [isDragging, setIsDragging] = useState<"start" | "end" | null>(null);
   const [startPosition, setStartPosition] = useState(0);
@@ -52,6 +52,7 @@ export default function BlueskyTimeline({
   const lastDateRangeRef = useRef<{ startDate: Date; endDate: Date } | null>(
     null
   );
+  const { setDateRange, visiblePostUris, activeFilters } = useBluesky();
 
   useEffect(() => {
     setIsClient(true);
@@ -76,6 +77,24 @@ export default function BlueskyTimeline({
     const totalTime = latestDate.getTime() - earliestDate.getTime();
     const postTime = date.getTime() - earliestDate.getTime();
     return (postTime / totalTime) * 100;
+  };
+
+  // Helper to check if a URI belongs to the current user
+  const isMyUri = (uri: string) => {
+    const myUris = new Set(posts.map((p) => p.post.uri));
+    return myUris.has(uri);
+  };
+
+  // Calculate post type
+  const getPostType = (post: BlueskyTimelineProps["posts"][0]) => {
+    if (post.post.record.reply) {
+      if (isMyUri(post.post.record.reply.root.uri)) {
+        return "posts";
+      } else {
+        return "replies";
+      }
+    }
+    return "posts";
   };
 
   const handleMouseDown = (type: "start" | "end") => {
@@ -133,9 +152,16 @@ export default function BlueskyTimeline({
       lastDateRangeRef.current.endDate.getTime() !== endDate.getTime()
     ) {
       lastDateRangeRef.current = { startDate, endDate };
-      onDateRangeChange(startDate, endDate);
+      setDateRange(startDate, endDate);
     }
-  }, [startPosition, endPosition, earliestDate, latestDate, isClient]);
+  }, [
+    startPosition,
+    endPosition,
+    earliestDate,
+    latestDate,
+    isClient,
+    setDateRange,
+  ]);
 
   if (!isClient) {
     return null;
@@ -235,11 +261,23 @@ export default function BlueskyTimeline({
             const position = getPostPosition(
               new Date(post.post.record.createdAt)
             );
-            const isVisible = visiblePostUris?.has(post.post.uri);
+            const postType = getPostType(post);
+            const isVisible = visiblePostUris.has(post.post.uri);
+            const isFilteredOut =
+              activeFilters.size > 0 && !activeFilters.has(postType);
+
             return (
               <div
                 key={index}
-                className="absolute left-1/2 -translate-x-1/2 z-20"
+                className={`
+                  absolute left-1/2 -translate-x-1/2 z-20
+                  transition-all duration-300 ease-in-out
+                  ${
+                    isFilteredOut
+                      ? "opacity-0 scale-0"
+                      : "opacity-100 scale-100"
+                  }
+                `}
                 style={{ top: `${position}%` }}
                 onMouseEnter={(e) => {
                   setHoveredPost(post);

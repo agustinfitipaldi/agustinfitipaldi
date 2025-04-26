@@ -1,16 +1,11 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  MessageSquare,
-  Heart,
-  Repeat2,
-  Clock,
-  CalendarDays,
-} from "lucide-react";
+import { MessageSquare, Heart, Repeat2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useBluesky, PostType } from "@/contexts/BlueskyContext";
+import BlueskyFilters from "./BlueskyFilters";
 
 interface BlueskyPost {
   post: {
@@ -81,14 +76,8 @@ interface BlueskyPost {
   };
 }
 
-type PostType = "posts" | "replies" | "reposts";
-
 interface BlueskyGalleryProps {
   onContentHeightChange?: (height: number) => void;
-  dateRange?: {
-    startDate: Date;
-    endDate: Date;
-  };
 }
 
 function LoadingSkeleton() {
@@ -142,18 +131,23 @@ function LoadingSkeleton() {
 
 export default function BlueskyGallery({
   onContentHeightChange,
-  dateRange,
 }: BlueskyGalleryProps) {
   const [posts, setPosts] = useState<BlueskyPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeFilters, setActiveFilters] = useState<Set<PostType>>(new Set());
-  const [isChronological, setIsChronological] = useState(false);
   const [formattedDates, setFormattedDates] = useState<Record<string, string>>(
     {}
   );
   const [isClient, setIsClient] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const {
+    activeFilters,
+    isChronological,
+    dateRange,
+    updateFilteredThreads,
+    registerPostElement,
+    unregisterPostElement,
+  } = useBluesky();
 
   useEffect(() => {
     setIsClient(true);
@@ -272,38 +266,42 @@ export default function BlueskyGallery({
   // Sort all threads by timestamp
   filteredThreads = [...filteredThreads].sort((a, b) => {
     if (isChronological) {
-      // Sort by original post date
       const aTime = new Date(a[1][0].post.record.createdAt).getTime();
       const bTime = new Date(b[1][0].post.record.createdAt).getTime();
-      return aTime - bTime; // Ascending order for chronological
+      return aTime - bTime;
     } else {
-      // Sort by latest activity
       const aTime = Math.max(
         ...a[1].map((p) => new Date(p.post.record.createdAt).getTime())
       );
       const bTime = Math.max(
         ...b[1].map((p) => new Date(p.post.record.createdAt).getTime())
       );
-      return bTime - aTime; // Descending order for latest activity
+      return bTime - aTime;
     }
   });
 
-  // Sort posts within each thread
-  filteredThreads = filteredThreads.map(([rootUri, threadPosts]) => {
-    const sortedPosts = [...threadPosts].sort((a, b) => {
-      // Always keep parent posts before children
-      if (!a.post.record.reply) return -1;
-      if (!b.post.record.reply) return 1;
-      if (a.post.record.reply.parent.uri === b.post.uri) return 1;
-      if (b.post.record.reply.parent.uri === a.post.uri) return -1;
+  // Update filtered threads in context
+  useEffect(() => {
+    updateFilteredThreads(filteredThreads);
+  }, [filteredThreads, updateFilteredThreads]);
 
-      // Then sort by date according to the chronological setting
-      const aTime = new Date(a.post.record.createdAt).getTime();
-      const bTime = new Date(b.post.record.createdAt).getTime();
-      return isChronological ? aTime - bTime : bTime - aTime;
-    });
-    return [rootUri, sortedPosts] as [string, BlueskyPost[]];
-  });
+  // Register/unregister post elements for intersection observer
+  useEffect(() => {
+    const postElements = contentRef.current?.querySelectorAll("[data-uri]");
+    if (postElements) {
+      postElements.forEach((element) => {
+        registerPostElement(element as HTMLElement);
+      });
+    }
+
+    return () => {
+      if (postElements) {
+        postElements.forEach((element) => {
+          unregisterPostElement(element as HTMLElement);
+        });
+      }
+    };
+  }, [registerPostElement, unregisterPostElement, filteredThreads]);
 
   // Calculate post counts based on all posts (not filtered)
   const postCounts = {
@@ -330,50 +328,9 @@ export default function BlueskyGallery({
     return <div className="text-center py-8 text-red-500">{error}</div>;
   }
 
-  const toggleFilter = (type: PostType) => {
-    const newFilters = new Set(activeFilters);
-    if (newFilters.has(type)) {
-      newFilters.delete(type);
-    } else {
-      newFilters.add(type);
-    }
-    setActiveFilters(newFilters);
-  };
-
   return (
     <div ref={contentRef}>
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex gap-2 flex-wrap">
-          {(["posts", "replies", "reposts"] as PostType[]).map((type) => (
-            <Button
-              key={type}
-              variant={activeFilters.has(type) ? "default" : "secondary"}
-              size="sm"
-              onClick={() => toggleFilter(type)}
-              className="text-xs"
-            >
-              {type.charAt(0).toUpperCase() + type.slice(1)}{" "}
-              <span className="text-muted-foreground ml-1">
-                {postCounts[type]}
-              </span>
-            </Button>
-          ))}
-        </div>
-        <Button
-          variant={isChronological ? "default" : "secondary"}
-          size="sm"
-          onClick={() => setIsChronological(!isChronological)}
-          className="flex items-center gap-2"
-        >
-          {isChronological ? (
-            <Clock className="h-4 w-4" />
-          ) : (
-            <CalendarDays className="h-4 w-4" />
-          )}
-          {isChronological ? "Chronological" : "Latest"}
-        </Button>
-      </div>
-
+      <BlueskyFilters postCounts={postCounts} />
       <div className="flex flex-col gap-4">
         {filteredThreads.map(([rootUri, threadPosts]) => (
           <Card key={rootUri} className="transition-colors hover:bg-muted/50">

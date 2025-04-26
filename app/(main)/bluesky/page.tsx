@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import BlueskyGallery from "@/components/BlueskyGallery";
 import BlueskyTimeline from "@/components/BlueskyTimeline";
+import { BlueskyProvider } from "@/contexts/BlueskyContext";
 
 interface BlueskyPost {
   post: {
@@ -37,15 +38,7 @@ export default function BlueskyPage() {
   const [contentHeight, setContentHeight] = useState(0);
   const [windowWidth, setWindowWidth] = useState(0);
   const [posts, setPosts] = useState<BlueskyPost[]>([]);
-  const [dateRange, setDateRange] = useState<{
-    startDate: Date;
-    endDate: Date;
-  } | null>(null);
-  const [visiblePostUris, setVisiblePostUris] = useState<Set<string>>(
-    new Set()
-  );
   const galleryRef = useRef<HTMLDivElement>(null);
-  const visiblePostUrisRef = useRef<Set<string>>(new Set());
 
   // Initialize client-side state
   useEffect(() => {
@@ -76,53 +69,6 @@ export default function BlueskyPage() {
     fetchPosts();
   }, []);
 
-  // Track visible posts
-  useEffect(() => {
-    if (!galleryRef.current) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const newVisibleUris = new Set(visiblePostUrisRef.current);
-        let hasChanges = false;
-
-        entries.forEach((entry) => {
-          const postElement = entry.target as HTMLElement;
-          const uri = postElement.dataset.uri;
-          if (uri) {
-            if (entry.isIntersecting) {
-              if (!newVisibleUris.has(uri)) {
-                newVisibleUris.add(uri);
-                hasChanges = true;
-              }
-            } else {
-              if (newVisibleUris.has(uri)) {
-                newVisibleUris.delete(uri);
-                hasChanges = true;
-              }
-            }
-          }
-        });
-
-        if (hasChanges) {
-          visiblePostUrisRef.current = newVisibleUris;
-          setVisiblePostUris(newVisibleUris);
-        }
-      },
-      {
-        root: null,
-        rootMargin: "0px",
-        threshold: 0.1,
-      }
-    );
-
-    const postElements = galleryRef.current.querySelectorAll("[data-uri]");
-    postElements.forEach((element) => observer.observe(element));
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [posts]);
-
   // Calculate total height by adding fixed padding to content height
   // pt-64 = 16rem = 256px (on screens >= 640px)
   // pt-8 = 2rem = 32px (on mobile)
@@ -130,26 +76,17 @@ export default function BlueskyPage() {
   const totalHeight = contentHeight + (windowWidth >= 640 ? 256 : 32) + 384;
 
   return (
-    <div className="relative" style={{ minHeight: `${totalHeight}px` }}>
-      <div
-        ref={galleryRef}
-        className="max-w-2xl mx-auto px-8 pt-4 sm:pt-64 pb-96"
-      >
-        <h1 className="text-4xl font-bold mb-8">Bluesky</h1>
-        <BlueskyGallery
-          onContentHeightChange={setContentHeight}
-          dateRange={dateRange || undefined}
-        />
+    <BlueskyProvider>
+      <div className="relative" style={{ minHeight: `${totalHeight}px` }}>
+        <div
+          ref={galleryRef}
+          className="max-w-2xl mx-auto px-8 pt-4 sm:pt-64 pb-96"
+        >
+          <h1 className="text-4xl font-bold mb-8">Bluesky</h1>
+          <BlueskyGallery onContentHeightChange={setContentHeight} />
+        </div>
+        {posts.length > 0 && <BlueskyTimeline posts={posts} />}
       </div>
-      {posts.length > 0 && (
-        <BlueskyTimeline
-          posts={posts}
-          onDateRangeChange={(startDate, endDate) =>
-            setDateRange({ startDate, endDate })
-          }
-          visiblePostUris={visiblePostUris}
-        />
-      )}
-    </div>
+    </BlueskyProvider>
   );
 }
