@@ -68,9 +68,16 @@ export function ProjectsSection() {
 
   const projects: Project[] = [
     {
+      title: "ManicTime Server",
+      description: [
+        "Setup server on digital ocean droplet with the help of cursor to host a ManicTime server instance and track computer usage across several devices.",
+      ],
+      tags: ["AI", "server", "shell", "sysadmin", "ssh"],
+    },
+    {
       title: "ettle",
       description: [
-        "An entirely custom task manager built for myself on Supabase and hosted on Cloudflare. In early development but open for use by others.",
+        "An entirely custom task manager built for myself on Supabase and hosted on Cloudflare. In early development but open for use by others.","UPDATE: Project has been put on pause as I develop an idea base that's more sound.",
       ],
       link: "https://ettle.me",
       tags: ["AI", "Next.js", "Tailwind CSS", "Supabase", "Cloudflare"],
@@ -103,8 +110,7 @@ export function ProjectsSection() {
       title: "DWP Viewer",
       description: [
         "A closed-access internal customer contact management system for Mathnasium franchises. Uses a variety of tools to enable a collaborative, data-fueled email composer for customer outreach.",
-        "Initially designed and organized by me, now developing in collaboration with a team of 3",
-        "Writeups coming soon...",
+        "Initially designed and developed by me, has since been passed onto a more dedicated team",
       ],
       tags: [
         "AI",
