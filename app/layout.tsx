@@ -1,13 +1,8 @@
-import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import ClientWrapper from "./ClientWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
-
-export const metadata: Metadata = {
-  title: "Agustin Fitipaldi",
-  description: "Personal website of Agustin Fitipaldi",
-};
 
 export default function RootLayout({
   children,
@@ -15,8 +10,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" className="light" style={{ colorScheme: "light" }}>
+      <body className={inter.className}>
+        <ClientWrapper>{children}</ClientWrapper>
+      </body>
     </html>
   );
 }
