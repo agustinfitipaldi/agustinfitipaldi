@@ -22,6 +22,7 @@ type NavItem = {
 const mainNav: NavItem[] = [
   { title: "Home", href: "/" },
   { title: "Bluesky", href: "/bluesky" },
+  { title: "Files", href: "/files" },
 ];
 
 function NavLink({
@@ -172,8 +173,10 @@ export function SiteNav({ posts }: { posts: writingPost[] }) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "text-4xl relative after:absolute after:-right-4 after:top-1/2 after:-translate-y-[20px] after:w-1 after:h-12 after:rounded-full",
-                  item.title === "Bluesky" && "text-2xl pt-2",
+                  item.title === "Bluesky" || item.title === "Files"
+                    ? "text-2xl pt-2"
+                    : "text-4xl",
+                  "relative after:absolute after:-right-4 after:top-1/2 after:-translate-y-[20px] after:w-1 after:h-12 after:rounded-full",
                   isActive ? "after:bg-foreground" : "after:bg-transparent"
                 )}
               >
