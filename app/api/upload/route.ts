@@ -12,6 +12,13 @@ export async function POST(request: Request): Promise<NextResponse> {
     );
   }
 
+  if (!request.body) {
+    return NextResponse.json(
+      { error: 'Request body is required' },
+      { status: 400 }
+    );
+  }
+
   const blob = await put(filename, request.body, {
     access: 'public',
   });
