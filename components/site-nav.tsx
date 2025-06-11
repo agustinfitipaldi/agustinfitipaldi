@@ -57,9 +57,11 @@ function NavLink({
 function WritingLinks({
   posts,
   onLinkClick,
+  isFilePage = false,
 }: {
   posts: writingPost[];
   onLinkClick: () => void;
+  isFilePage?: boolean;
 }) {
   return (
     <div className="space-y-2 text-right">
@@ -84,6 +86,7 @@ export function SiteNav({ posts }: { posts: writingPost[] }) {
   const { scrolledToTop } = useScroll();
   const pathname = usePathname();
   const isFixedNav = fixedNavPages.includes(pathname);
+  const isFilePage = pathname.startsWith("/files/") && pathname !== "/files";
   const [open, setOpen] = useState(false);
 
   const scrollToTop = () => {
@@ -138,6 +141,7 @@ export function SiteNav({ posts }: { posts: writingPost[] }) {
                     <WritingLinks
                       posts={posts}
                       onLinkClick={() => setOpen(false)}
+                      isFilePage={isFilePage}
                     />
                   </div>
                 </div>
@@ -161,7 +165,10 @@ export function SiteNav({ posts }: { posts: writingPost[] }) {
       )}
 
       {/* Desktop Navigation */}
-      <div className="hidden lg:flex lg:flex-col lg:w-[300px] lg:fixed lg:right-[calc(50%+15rem)] lg:top-[33vh] lg:h-[calc(100vh-4rem)] lg:gap-8 lg:z-10">
+      <div className={cn(
+        "hidden lg:flex lg:flex-col lg:w-[300px] lg:fixed lg:top-[33vh] lg:h-[calc(100vh-4rem)] lg:gap-8 lg:z-10",
+        isFilePage ? "lg:left-4" : "lg:right-[calc(50%+15rem)]"
+      )}>
         <nav className="flex flex-col gap-6 items-end">
           <div className="-mb-2 -mr-4">
             <ModeToggle />
@@ -189,7 +196,7 @@ export function SiteNav({ posts }: { posts: writingPost[] }) {
           <div className="space-y-4 w-full">
             <div className="h-px bg-border" />
           </div>
-          <WritingLinks posts={posts} onLinkClick={() => {}} />
+          <WritingLinks posts={posts} onLinkClick={() => {}} isFilePage={isFilePage} />
         </div>
       </div>
     </>

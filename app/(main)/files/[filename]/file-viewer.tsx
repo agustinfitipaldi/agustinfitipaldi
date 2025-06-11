@@ -75,39 +75,42 @@ export function FileViewer({ blob, notesHtml, meta }: FileViewerProps) {
   const categoryColor = meta.category ? CATEGORY_COLORS[meta.category] || 'bg-gray-200 text-gray-800' : '';
 
   return (
-    <div className="relative min-h-screen flex">
-      {/* Left side - Notes and metadata */}
-      <div className="w-[300px] fixed left-0 top-0 h-screen p-8 border-r border-border overflow-y-auto bg-background">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-4">{displayTitle}</h1>
-          {meta.category && (
-            <span className={`px-2 py-1 rounded text-xs font-bold ${categoryColor}`}>
-              {meta.category}
-            </span>
-          )}
-        </div>
-        
-        <div className="mb-8">
-          <a
-            href={blob.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block bg-primary text-primary-foreground px-4 py-2 rounded hover:bg-primary/90 transition-colors"
-          >
-            Download File
-          </a>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Left side - Notes and metadata */}
+        <div className="lg:w-[320px] lg:shrink-0">
+          <div className="sticky top-8 space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold mb-4">{displayTitle}</h1>
+              {meta.category && (
+                <span className={`px-2 py-1 rounded text-xs font-bold ${categoryColor}`}>
+                  {meta.category}
+                </span>
+              )}
+            </div>
+            
+            <div>
+              <a
+                href={blob.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block bg-primary text-primary-foreground px-4 py-2 rounded hover:bg-primary/90 transition-colors"
+              >
+                Download File
+              </a>
+            </div>
+
+            {notesHtml && (
+              <div 
+                className="prose dark:prose-invert max-w-none" 
+                dangerouslySetInnerHTML={{ __html: notesHtml }} 
+              />
+            )}
+          </div>
         </div>
 
-        {notesHtml && (
-          <div 
-            className="prose dark:prose-invert max-w-none" 
-            dangerouslySetInnerHTML={{ __html: notesHtml }} 
-          />
-        )}
-      </div>
-
-      {/* Right side - PDF Viewer or File Preview */}
-      <div className="flex-1 ml-[300px] p-8 min-h-screen bg-muted/30">
+        {/* Right side - PDF Viewer or File Preview */}
+        <div className="flex-1 min-h-screen bg-muted/30 rounded-lg p-6">
         {isPdf ? (
           <div className="flex flex-col items-center">
             {isLoading && !pdfError && (
@@ -146,7 +149,7 @@ export function FileViewer({ blob, notesHtml, meta }: FileViewerProps) {
                     key={`page_${index + 1}`}
                     pageNumber={index + 1}
                     className="mb-4 shadow-lg bg-white"
-                    width={Math.min(windowWidth * 0.6, 800)}
+                    width={Math.min(windowWidth * 0.5, 600)}
                     loading={
                       <div className="flex items-center justify-center h-[600px] w-full bg-muted/10">
                         Loading page {index + 1}...
@@ -166,7 +169,8 @@ export function FileViewer({ blob, notesHtml, meta }: FileViewerProps) {
           <div className="h-full flex items-center justify-center">
             <p className="text-muted-foreground">Preview not available for this file type</p>
           </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
