@@ -57,11 +57,9 @@ function NavLink({
 function WritingLinks({
   posts,
   onLinkClick,
-  isFilePage = false,
 }: {
   posts: writingPost[];
   onLinkClick: () => void;
-  isFilePage?: boolean;
 }) {
   return (
     <div className="space-y-2 text-right">
@@ -141,7 +139,6 @@ export function SiteNav({ posts }: { posts: writingPost[] }) {
                     <WritingLinks
                       posts={posts}
                       onLinkClick={() => setOpen(false)}
-                      isFilePage={isFilePage}
                     />
                   </div>
                 </div>
@@ -196,7 +193,7 @@ export function SiteNav({ posts }: { posts: writingPost[] }) {
           <div className="space-y-4 w-full">
             <div className="h-px bg-border" />
           </div>
-          <WritingLinks posts={posts} onLinkClick={() => {}} isFilePage={isFilePage} />
+          <WritingLinks posts={posts} onLinkClick={() => {}} />
         </div>
       </div>
     </>
