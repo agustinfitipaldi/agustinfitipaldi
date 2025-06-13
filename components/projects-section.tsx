@@ -68,6 +68,16 @@ export function ProjectsSection() {
 
   const projects: Project[] = [
     {
+      title: "Rabbithole",
+      description: [
+	"Linux tool that makes looking things up and going into rabbitholes very easy without doing a full context switch.",
+	"Successor to popup search extension but system wide and on a stronger platform.",
+        "Features automatic text capture, SQLite logging, and hot-reloadable configuration.",
+      ],
+      link: "https://github.com/agustinfitipaldi/rabbithole",
+      tags: ["AI", "Go", "Linux", "Research Tools"],
+    },
+    {
       title: "ManicTime Server",
       description: [
         "Setup server on digital ocean droplet with the help of cursor to host a ManicTime server instance and track computer usage across several devices.",
