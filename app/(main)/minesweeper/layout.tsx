@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Minesweeper Editor',
-  description: 'Play classic Minesweeper or create custom boards with our interactive editor. Share your creations with URL-based game state.',
+  description: 'Play and edit Minesweeper boards, share to with URL.',
 };
 
 export default function MinesweeperLayout({

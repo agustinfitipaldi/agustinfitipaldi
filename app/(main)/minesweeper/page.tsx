@@ -308,16 +308,18 @@ const Minesweeper = () => {
   }, [preset, mineCount]);
 
   const getCellContent = (x: number, y: number) => {
+    const iconSize = board[0]?.length >= 30 ? "w-3 h-3" : "w-4 h-4";
+    
     if (mode === 'edit') {
-      return board[y][x] === -1 ? <Bomb className="w-4 h-4" /> : null;
+      return board[y][x] === -1 ? <Bomb className={iconSize} /> : null;
     }
     
     if (!revealed[y] || !revealed[y][x]) {
-      return (flagged[y] && flagged[y][x]) ? <Flag className="w-4 h-4 text-red-500" /> : null;
+      return (flagged[y] && flagged[y][x]) ? <Flag className={`${iconSize} text-red-500`} /> : null;
     }
     
     if (board[y][x] === -1) {
-      return <Bomb className="w-4 h-4" />;
+      return <Bomb className={iconSize} />;
     }
     
     if (board[y][x] > 0) {
@@ -330,7 +332,9 @@ const Minesweeper = () => {
   };
 
   const getCellClass = (x: number, y: number) => {
-    const base = "w-8 h-8 border border-border flex items-center justify-center text-sm cursor-pointer transition-colors ";
+    const cellSize = board[0]?.length >= 30 ? "w-6 h-6" : "w-8 h-8";
+    const textSize = board[0]?.length >= 30 ? "text-xs" : "text-sm";
+    const base = `${cellSize} border border-border flex items-center justify-center ${textSize} cursor-pointer transition-colors `;
     
     if (mode === 'edit') {
       return base + (board[y][x] === -1 ? "bg-red-200 hover:bg-red-300 dark:bg-red-900 dark:hover:bg-red-800" : "bg-muted hover:bg-muted/80");
