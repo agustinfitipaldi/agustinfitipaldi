@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Bomb, Flag, Edit3, Play, Share2, RotateCcw } from 'lucide-react';
+import { Bomb, Flag, Edit3, Play, Clipboard, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
@@ -275,8 +275,8 @@ const Minesweeper = () => {
     
     navigator.clipboard.writeText(url).then(() => {
       toast({
-        title: "Board URL copied to clipboard!",
-        description: "Share this link to let others play your custom board.",
+        title: "Copied to clipboard!",
+        description: "Board URL is ready to paste and share.",
       });
     }).catch(() => {
       // Fallback for older browsers
@@ -287,8 +287,8 @@ const Minesweeper = () => {
       document.execCommand('copy');
       document.body.removeChild(textArea);
       toast({
-        title: "Board URL copied to clipboard!",
-        description: "Share this link to let others play your custom board.",
+        title: "Copied to clipboard!",
+        description: "Board URL is ready to paste and share.",
       });
     });
   }, [toast]);
@@ -356,7 +356,14 @@ const Minesweeper = () => {
   return (
     <div className="max-w-4xl mx-auto px-8 pt-4 sm:pt-16 pb-32">
       <div className="flex flex-col items-center gap-6">
-        <h1 className="text-4xl font-bold">Minesweeper</h1>
+        <div className="text-left space-y-4">
+          <h1 className="text-4xl font-bold">Minesweeper Editor</h1>
+          <div className="max-w-2xl">
+            <p>
+              I noticed today (July 9, 2025) that while there's an incredible amount of ways to <em>play</em> minewsweeper on the web, there are very few ways to <em>edit</em> minesweeper on the web. So I had Claude Code spin up this very basic editor that allows anyone to edit bomb placement of any of the standard types of boards, and since the seed is in the url parameters, it can be shared easily. Enjoy!
+            </p>
+          </div>
+        </div>
         
         <Card className="w-full max-w-2xl">
           <CardContent className="p-6">
@@ -375,13 +382,27 @@ const Minesweeper = () => {
                 <option value="expert">Expert (30×16, 99 mines)</option>
               </select>
               
-              <Button
-                onClick={() => setMode(mode === 'play' ? 'edit' : 'play')}
-                variant={mode === 'play' ? 'default' : 'secondary'}
-                size="sm"
-              >
-                {mode === 'play' ? <><Play className="w-4 h-4" /> Play</> : <><Edit3 className="w-4 h-4" /> Edit</>}
-              </Button>
+              <div className="flex items-center gap-3">
+                <label className="inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only"
+                    checked={mode === 'edit'}
+                    onChange={() => setMode(mode === 'play' ? 'edit' : 'play')}
+                  />
+                  <div className="relative">
+                    <div className={`w-11 h-6 rounded-full transition-colors ${
+                      mode === 'edit' ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
+                    }`}></div>
+                    <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
+                      mode === 'edit' ? 'translate-x-5' : 'translate-x-0'
+                    }`}></div>
+                  </div>
+                </label>
+                <span className={`text-sm ${mode === 'edit' ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  Edit
+                </span>
+              </div>
               
               <Button
                 onClick={reset}
@@ -396,7 +417,7 @@ const Minesweeper = () => {
                 variant="outline"
                 size="sm"
               >
-                <Share2 className="w-4 h-4" /> Share
+                <Clipboard className="w-4 h-4" /> Copy Board
               </Button>
             </div>
             
@@ -436,8 +457,8 @@ const Minesweeper = () => {
             
             <div className="text-sm text-muted-foreground text-center mt-4">
               {mode === 'edit' ? 
-                "Click cells to place/remove mines. Switch to Play mode when done." :
-                "Left click to reveal, right click to flag. Game starts on first click."
+                "Click cells to place/remove mines. Turn off edit mode when done to play the board." :
+                "Left click to reveal, right click to flag."
               }
             </div>
           </CardContent>
