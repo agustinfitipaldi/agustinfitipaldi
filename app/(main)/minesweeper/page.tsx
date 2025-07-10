@@ -364,7 +364,7 @@ const Minesweeper = () => {
           <h1 className="text-4xl font-bold">Minesweeper Editor</h1>
           <div className="max-w-2xl">
             <p>
-              I noticed today (July 9, 2025) that while there&apos;s an incredible amount of ways to <em>play</em> minewsweeper on the web, there are very few ways to <em>edit</em> minesweeper on the web. So I had Claude Code spin up this very basic editor that allows anyone to edit bomb placement of any of the standard types of boards, and since the seed is in the url parameters, it can be shared easily. Enjoy!
+              I noticed today (July 9, 2025) that while there&apos;s an incredible amount of ways to <em>play</em> minesweeper on the web, there are very few ways (none?) to easily <em>edit</em> minesweeper on the web. So I had Claude Code spin up this basic editor that allows one to edit the bomb placement of the standard types (difficulties) of boards, and since the seed is in the url parameters, it can be shared easily. Enjoy!
             </p>
           </div>
         </div>
