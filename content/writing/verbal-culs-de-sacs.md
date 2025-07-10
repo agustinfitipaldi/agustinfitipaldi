@@ -2,7 +2,7 @@
 tags:
   - notes
 title: verbal culs-de-sac
-date: 2024-01-14
+date: 2025-01-14
 ---
 
 A professor somewhere was giving a lecture today. In this lecture, he provided an example to illustrate a point, shortly followed by another, analogous, example. He provided two examples, and since he had given an accompanying conclusion to the first example, which is to be expected, he now faced a diverging path before him. He could either choose to exit quick by stating some variant of "same same" at the end, allowing the students to fill in the blanks, or he could repeat himself and restate the now slightly modified, second, conclusion.
