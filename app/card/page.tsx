@@ -136,7 +136,7 @@ export default function BusinessCard() {
             Economics Major & Systems Operations Specialist
           </p>
           <p className="text-sm mb-4">
-            UCSB Economics | Research Interest in Government Systems
+            UCSB Economics | Research Interest in Networks & Market Design
           </p>
 
           {/* Contact Links */}

@@ -67,6 +67,22 @@ export function ProjectsSection() {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
   const projects: Project[] = [
+      {
+        title: "RePEC Scraper",
+        description: [
+        "Python script to scrape tables from RePEC Institutional Field Ranking tables and combine them into a single csv.",
+        ],
+        link: "https://github.com/agustinfitipaldi/econrankings",
+        tags: ["AI", "Python", "Scraper", "Research Tools"],
+      },
+      {
+        title: "FDIC State Tables Scraper",
+        description: [
+        "Python script that scrapes FDIC State Tables recursively and creates csv's for analysis.",
+        ],
+        link: "https://github.com/agustinfitipaldi/state-table-fdic-scraper",
+        tags: ["AI", "Python","Scraper", "Research Tools"],
+      },
     {
       title: "Rabbithole",
       description: [
@@ -80,17 +96,9 @@ export function ProjectsSection() {
     {
       title: "ManicTime Server",
       description: [
-        "Setup server on digital ocean droplet with the help of cursor to host a ManicTime server instance and track computer usage across several devices.",
+        "Setup server on digital ocean droplet with the help of Claude in order to host a ManicTime server instance and track device usage across platforms.",
       ],
       tags: ["AI", "server", "shell", "sysadmin", "ssh"],
-    },
-    {
-      title: "ettle",
-      description: [
-        "An entirely custom task manager built for myself on Supabase and hosted on Cloudflare. In early development but open for use by others.","UPDATE: Project has been put on pause as I develop an idea base that's more sound.",
-      ],
-      link: "https://ettle.me",
-      tags: ["AI", "Next.js", "Tailwind CSS", "Supabase", "Cloudflare"],
     },
     {
       title: "Popup Search Extension",
@@ -98,7 +106,7 @@ export function ProjectsSection() {
         "An chromium web extension created with Claude that lets you search highlighted text through a variety of popup configurable search engines using keyboard shortcuts.",
       ],
       link: "https://github.com/agustinfitipaldi/popup-search",
-      tags: ["AI", "Extension", "Javascript/HTML"],
+      tags: ["AI", "Extension", "Javascript/HTML", "Research Tools"],
     },
     {
       title: "Personal Rotten Tomatoes API",
@@ -106,7 +114,7 @@ export function ProjectsSection() {
         "A personal use API for Rotten Tomatoes data, created with Claude. Made in conjunction with my movie info extension below.",
       ],
       link: "https://github.com/agustinfitipaldi/rt-scraper",
-      tags: ["AI", "API", "Node.js"],
+      tags: ["AI", "API", "Node.js", "Scraper"],
     },
     {
       title: "Rotten Tomatoes Info Extension",

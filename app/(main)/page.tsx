@@ -99,25 +99,13 @@ export default async function Page() {
         {/* About Section */}
         <section className="mb-12">
           <p className="text-lg leading-relaxed">
-            Hi! Welcome to my website =)
+            I&apos;m an undergrad majoring in Economics at the University of California, Santa Barbara.
+            I will be pursuing a PhD after undergrad likely focused around Networks and Market Design.
             <br />
             <br />
-            I&apos;m an undergrad double majoring in Economics, and Probability
-            &amp; Statistics at the University of California, Santa Barbara.
-            I&apos;m looking to pursue grad school in economics, and am
-            interested in research surrounding the intersection of disciplines
-            such as economics, history, and knowledge management.
-            <br />
-            <br />
-            I work as an Operations Specialist for a couple of Mathnasium
-            franchises in the Bay Area, where my responsibilities currently
-            involve the development and maintenance of a customer contact
-            management system.
-            <br />
-            <br />
-            All of my web development is largely a product of using Claude
-            Sonnet 3.5 in Cursor to bring my ideas to reality. Note the AI tag
-            in my project list below to filter for it.
+            All of my development is largely a product of using Claude Code
+            to bring my ideas to reality. Note the AI tag in my project list
+            below to filter for it.
           </p>
         </section>
 
