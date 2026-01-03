@@ -24,7 +24,6 @@ export default function BusinessCard() {
     vCard.set("bday", "2001-11-29");
     vCard.set("title", "Economics Major");
     vCard.set("email", "agustin@fitipaldi.com");
-    vCard.set("tel", "+14157452672"); // Corrected from "phone" to "tel"
     vCard.set("url", "https://agustinfitipaldi.com");
     vCard.set("org", "University of California, Santa Barbara");
     vCard.set("role", "Student");
