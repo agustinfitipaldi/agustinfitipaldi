@@ -100,8 +100,7 @@ export default async function Page() {
         <section className="mb-12">
           <p className="text-lg leading-relaxed">
             I&apos;m an undergrad majoring in Economics and Applied Math at the University 
-            of California, Santa Barbara. I will be pursuing a PhD in Operations Research 
-            after undergrad likely focused around energy supply chain and resilience.
+            of California, Santa Barbara. I will be pursuing a PhD in Computational Cognitive science after undergrad.
             <br />
             <br />
             All of my development is largely a product of using Claude Code
