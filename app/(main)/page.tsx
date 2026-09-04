@@ -99,8 +99,8 @@ export default async function Page() {
         {/* About Section */}
         <section className="mb-12">
           <p className="text-lg leading-relaxed">
-            I&apos;m an undergrad majoring in Economics and Applied Math at the University 
-            of California, Santa Barbara. I will be pursuing a PhD in Theoretical Neuroscience after undergrad.
+            I am majoring in Economics and Applied Math at UCSB and am pursuing a PhD in
+            Theoretical Neuroscience.
             <br />
             <br />
             All of my development is largely a product of using Claude Code
