@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agustin Fitipaldi</title>
+  <meta name="description" content="Agustin Fitipaldi. Site under construction.">
+  <meta name="color-scheme" content="light dark">
+  <style>
+    :root {
+      --bg: #fafaf9;
+      --fg: #1c1917;
+      --muted: #78716c;
+      --line: #e7e5e4;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0c0a09;
+        --fg: #e7e5e4;
+        --muted: #a8a29e;
+        --line: #292524;
+      }
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font: 18px/1.6 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+    }
+    main { max-width: 32rem; width: 100%; }
+    h1 { font-size: 1.5rem; font-weight: 600; margin: 0 0 0.5rem; letter-spacing: -0.01em; }
+    p { margin: 0 0 1.5rem; color: var(--muted); }
+    .cursor::after {
+      content: "_";
+      animation: blink 1s steps(2, start) infinite;
+    }
+    @keyframes blink { to { visibility: hidden; } }
+    nav {
+      display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem;
+      padding-top: 1.5rem; border-top: 1px solid var(--line);
+    }
+    a { color: var(--fg); text-decoration: none; border-bottom: 1px solid var(--line); }
+    a:hover { border-bottom-color: var(--fg); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Agustin Fitipaldi</h1>
+    <p class="cursor">under construction</p>
+    <nav>
+      <a href="mailto:agustin@fitipaldi.com">email</a>
+      <a href="https://github.com/agustinfitipaldi" rel="me">github</a>
+      <a href="https://linkedin.com/in/agustinfitipaldi" rel="me">linkedin</a>
+    </nav>
+  </main>
+</body>
+</html>
